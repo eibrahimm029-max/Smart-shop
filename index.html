@@ -176,8 +176,6 @@
                 <span onclick="closeModals()">&times;</span>
             </div>
             <div id="trackingBody" style="font-size:12px;"></div>
-            
-            <!-- AI Automated Email & Verification Seal Box -->
             <div class="ai-notify-box" id="aiNotifyBox" style="display:none;">
                 <h4><i class="fa-solid fa-robot"></i> AI System Auto-Dispatch</h4>
                 <p id="aiEmailStatusText">Generating AI Email & Seal Stamp...</p>
@@ -228,6 +226,7 @@
 
         function displayProducts(items) {
             const container = document.getElementById('productContainer');
+            if(!container) return;
             if(items.length === 0) {
                 container.innerHTML = `<div class="no-result">No products found.</div>`;
                 return;
@@ -247,7 +246,9 @@
         displayProducts(products);
 
         function searchProducts() {
-            const q = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchInput = document.getElementById('searchInput');
+            if(!searchInput) return;
+            const q = searchInput.value.toLowerCase().trim();
             const filtered = products.filter(p => p.name.toLowerCase().includes(q));
             displayProducts(filtered);
         }
@@ -271,7 +272,8 @@
         function openAccountModal(element) {
             setActiveNav(element);
             closeModals();
-            document.getElementById('accountModal').style.display = 'flex';
+            const modal = document.getElementById('accountModal');
+            if(modal) modal.style.display = 'flex';
             checkLoginState();
         }
 
@@ -279,7 +281,8 @@
             let pass = prompt("Enter Admin Password:");
             if(pass === "1234") {
                 closeModals();
-                document.getElementById('adminModal').style.display = 'flex';
+                const adm = document.getElementById('adminModal');
+                if(adm) adm.style.display = 'flex';
             } else if(pass !== null) {
                 alert("Incorrect Password!");
             }
@@ -288,19 +291,22 @@
         function openTrackingModal(element) {
             setActiveNav(element);
             closeModals();
-            document.getElementById('trackingModal').style.display = 'flex';
+            const trk = document.getElementById('trackingModal');
+            if(trk) trk.style.display = 'flex';
             renderTrackingInfo();
         }
 
         function openChatModal(element) {
             setActiveNav(element);
             closeModals();
-            document.getElementById('chatModal').style.display = 'flex';
+            const chat = document.getElementById('chatModal');
+            if(chat) chat.style.display = 'flex';
         }
 
         function openCustomerSellModal() {
             closeModals();
-            document.getElementById('customerSellModal').style.display = 'flex';
+            const sell = document.getElementById('customerSellModal');
+            if(sell) sell.style.display = 'flex';
         }
 
         function submitCustomerProduct() {
@@ -313,7 +319,9 @@
 
         let generatedOtp = "", savedEmail = "";
         function sendOtp() {
-            const email = document.getElementById('userEmail').value.trim();
+            const emailInput = document.getElementById('userEmail');
+            if(!emailInput) return;
+            const email = emailInput.value.trim();
             if(!email.includes('@')) { alert("Enter valid email"); return; }
             generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
             savedEmail = email;
@@ -323,7 +331,9 @@
         }
 
         function verifyOtp() {
-            if(document.getElementById('otpCode').value.trim() === generatedOtp) {
+            const otpInput = document.getElementById('otpCode');
+            if(!otpInput) return;
+            if(otpInput.value.trim() === generatedOtp) {
                 localStorage.setItem('smartTechEmail', savedEmail);
                 checkLoginState();
             } else { alert("Invalid Code"); }
@@ -331,30 +341,20 @@
 
         function checkLoginState() {
             const email = localStorage.getItem('smartTechEmail');
+            const step1 = document.getElementById('accountStep1');
+            const step2 = document.getElementById('accountStep2');
+            const step3 = document.getElementById('accountStep3');
+            if(!step1 || !step2 || !step3) return;
+
             if(email) {
-                document.getElementById('accountStep1').style.display = 'none';
-                document.getElementById('accountStep2').style.display = 'none';
-                document.getElementById('accountStep3').style.display = 'block';
+                step1.style.display = 'none';
+                step2.style.display = 'none';
+                step3.style.display = 'block';
                 document.getElementById('loggedInEmail').innerText = `Logged in: ${email}`;
                 document.getElementById('profileName').value = localStorage.getItem('profileName') || '';
                 document.getElementById('profilePhone').value = localStorage.getItem('profilePhone') || '+8809658777230';
                 document.getElementById('profileAddress').value = localStorage.getItem('profileAddress') || 'Soyaitpur Bazar, Phulbaria, Mymensingh';
-            }
-        }
-
-        function saveProfile() {
-            localStorage.setItem('profileName', document.getElementById('profileName').value);
-            localStorage.setItem('profilePhone', document.getElementById('profilePhone').value);
-            localStorage.setItem('profileAddress', document.getElementById('profileAddress').value);
-            alert("Profile saved successfully!");
-            closeModals();
-        }
-
-        function logout() {
-            localStorage.removeItem('smartTechEmail');
-            checkLoginState();
-        }
-
-        function startQuickOrder(productId) {
-            const email = localStorage.getItem('smartTechEmail');
-            if(!email)
+            } else {
+                step1.style.display = 'block';
+                step2.style.display = 'none';
+                step3.style.display = 'n
