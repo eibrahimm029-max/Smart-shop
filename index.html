@@ -31,7 +31,7 @@
         </div>
     </header>
 
-    <!-- মালিকের জন্য সিক্রেট অ্যাডমিন বার (আপনার নির্দিষ্ট জিমেইল লগইন থাকলেই কেবল এটি স্ক্রিনে ভেসে উঠবে) -->
+    <!-- মালিকের জন্য সিক্রেট অ্যাডমিন বার -->
     <div id="ownerQuickBar" style="display:none; background:#0f172a; padding:8px 15px; justify-content:space-between; align-items:center; color:white; font-size:11px; border-bottom:2px solid #f85606;">
         <span>🔐 ওনার মোড অ্যাক্টিভ (মাস্টার কন্ট্রোল প্যানেল)</span>
         <div style="display:flex; gap:8px;">
@@ -81,7 +81,7 @@
             </div>
 
             <div id="accountStep2" style="display:none;">
-                <p style="font-size:11px; color:#64748b; margin-bottom:8px;" id="otpInstructionText">এআই কোড পাঠানো হয়েছে। কোডটি দিন:</p>
+                <p style="font-size:11px; color:#64748b; margin-bottom:8px;" id="otpInstructionText">এআই কোড জেনারেট হচ্ছে...</p>
                 <input type="text" id="otpCode" placeholder="৪ ডিজিটের ওটিপি কোড" class="form-input">
                 <button class="form-btn" onclick="verifyOtp()">কোড ভেরিফাই করুন</button>
             </div>
@@ -96,7 +96,7 @@
                 <input type="text" id="profilePhone" placeholder="+880..." class="form-input">
 
                 <label style="font-size:10px; font-weight:bold;">সিটি / জেলা</label>
-                <input type="text" id="profileCity" placeholder="যেমন: ময়মনসিংহ" class="form-input">
+                <input type="text" id="profileCity" placeholder="যেমন: ঢাকা" class="form-input">
 
                 <label style="font-size:10px; font-weight:bold;">পূর্ণ ঠিকানা ও জিপ কোড</label>
                 <textarea id="profileAddress" placeholder="বাসা/রোড, থানা, জিপ কোড" class="form-input" style="height:50px; resize:none;"></textarea>
@@ -141,7 +141,7 @@
         </div>
     </div>
 
-    <!-- মডাল: মালিকের মাস্টার প্যানেল (পণ্য যোগ, এডিট ও অর্ডার লিস্ট) -->
+    <!-- মডাল: মালিকের মাস্টার প্যানেল -->
     <div class="modal-screen" id="ownerMasterModal">
         <div class="modal-content" style="max-height:88vh; overflow-y:auto;">
             <span class="close-modal" onclick="closeModals()">&times;</span>
@@ -149,13 +149,11 @@
                 <h3 style="font-size:13px; margin:0; color:#f85606;"><i class="fa-solid fa-user-shield"></i> ওনার মাস্টার কন্ট্রোল প্যানেল</h3>
             </div>
 
-            <!-- ট্যাব বা সুইচ অপশন -->
             <div style="display:flex; gap:5px; margin-bottom:12px;">
                 <button onclick="switchAdminTab('add')" id="tabBtnAdd" style="flex:1; background:#2563eb; color:white; border:none; padding:6px; font-size:10px; border-radius:4px; font-weight:bold; cursor:pointer;">নতুন পণ্য যোগ</button>
                 <button onclick="switchAdminTab('orders')" id="tabBtnOrders" style="flex:1; background:#cbd5e1; color:#1e293b; border:none; padding:6px; font-size:10px; border-radius:4px; font-weight:bold; cursor:pointer;">অর্ডার লিস্ট</button>
             </div>
 
-            <!-- সেকশন ১: পণ্য যোগ/এডিট ফর্ম -->
             <div id="adminAddProductSection">
                 <h4 id="adminModalTitle" style="font-size:11px; color:#1e293b; margin-bottom:6px;">নতুন পণ্য যুক্ত করুন</h4>
                 <input type="hidden" id="editProductId">
@@ -189,7 +187,6 @@
                 <button class="form-btn" style="background:#f59e0b; margin-top:4px;" onclick="sendAdminBroadcast()">নোটিফিকেশন পাঠান</button>
             </div>
 
-            <!-- সেকশন ২: কাস্টমার অর্ডার লিস্ট -->
             <div id="adminOrdersSection" style="display:none;">
                 <h4 style="font-size:11px; color:#1e293b; margin-bottom:6px;">সকল কাস্টমার অর্ডার লিস্ট</h4>
                 <div id="ownerOrdersContainer"></div>
