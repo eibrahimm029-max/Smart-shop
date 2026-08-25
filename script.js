@@ -11,20 +11,19 @@ function displayProducts(items) {
     const container = document.getElementById('productContainer');
     if(!container) return;
     if(items.length === 0) {
-        container.innerHTML = `<div class="no-result">কোনো পণ্য পাওয়া যায়নি। নতুন পণ্য যোগ করুন।</div>`;
+        container.innerHTML = `<div class="no-result" style="grid-column: span 2; text-align:center; color:#64748b; padding:20px; font-size:11px;">কোনো পণ্য পাওয়া যায়নি। নতুন পণ্য যোগ করুন।</div>`;
         return;
     }
     
     container.innerHTML = items.map(p => {
         let isStockOut = p.status === 'stockout';
         let ownerControls = isOwnerLoggedIn ? `
-            <div class="owner-action-box">
+            <div class="owner-action-box" onclick="event.stopPropagation()">
                 <button class="edit-btn" onclick="openEditProduct(${p.id})">এডিট</button>
                 <button class="del-btn" onclick="deleteProduct(${p.id})">ডিলিট</button>
             </div>
         ` : '';
 
-        // ডিসকাউন্ট বা অফার পার্সেন্টেজ হিসাব
         let discountBadge = '';
         let oldPriceHtml = '';
         if(p.oldPrice && Number(p.oldPrice) > Number(p.price)) {
@@ -34,11 +33,10 @@ function displayProducts(items) {
             oldPriceHtml = `<span class="old-price">৳ ${p.oldPrice}</span>`;
         }
 
-        // ইমেজ অথবা ইমোজি রেন্ডারিং
         let imageHtml = p.imageSrc ? `<img src="${p.imageSrc}" alt="${p.name}">` : `<span>📦</span>`;
 
         return `
-            <div class="product-card">
+            <div class="product-card" onclick="openDarazProductDetails(${p.id})">
                 ${discountBadge}
                 <span class="stock-badge ${isStockOut ? '' : 'active'}">${isStockOut ? 'স্টক আউট' : 'ইন স্টক'}</span>
                 <div class="product-img">${imageHtml}</div>
@@ -49,7 +47,7 @@ function displayProducts(items) {
                         ${oldPriceHtml}
                     </div>
                     ${ownerControls}
-                    <button class="btn" ${isStockOut ? 'disabled' : ''} onclick="startQuickOrder(${p.id})">
+                    <button class="btn" ${isStockOut ? 'disabled' : ''} onclick="event.stopPropagation(); startQuickOrder(${p.id})">
                         ${isStockOut ? 'পণ্যটি নেই' : 'অর্ডার করুন'}
                     </button>
                 </div>
@@ -65,13 +63,105 @@ window.onload = function() {
     updateOwnerOrderBadge();
 }
 
+function openDarazProductDetails(productId) {
+    const p = products.find(item => item.id === productId);
+    if(!p) return;
+
+    if(!p.reviews) {
+        p.reviews = [
+            { name: "রহিম উদ্দিন", rating: "⭐⭐⭐⭐⭐", comment: "খুব চমৎকার এবং অরিজিনাল পণ্য! সময়মতো পেয়েছি।" },
+            { name: "ফাহিম আহমেদ", rating: "⭐⭐⭐⭐", comment: "ভালো কাজ করে, তবে ডেলিভারি একটু লেট হয়েছিল।" }
+        ];
+    }
+
+    let discountBadge = '';
+    let oldPriceHtml = '';
+    if(p.oldPrice && Number(p.oldPrice) > Number(p.price)) {
+        let diff = Number(p.oldPrice) - Number(p.price);
+        let percent = Math.round((diff / Number(p.oldPrice)) * 100);
+        discountBadge = `<span style="background:#f85606; color:white; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">-${percent}% ছাড়</span>`;
+        oldPriceHtml = `<span style="text-decoration:line-through; color:#94a3b8; font-size:12px; margin-left:6px;">৳ ${p.oldPrice}</span>`;
+    }
+
+    let imageHtml = p.imageSrc ? `<img src="${p.imageSrc}" alt="${p.name}" style="width:100%; height:180px; object-fit:cover; border-radius:6px;">` : `<div style="height:140px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:25px;">📦</div>`;
+
+    let reviewsHtml = p.reviews.map(r => `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:6px; border-radius:6px; margin-bottom:6px; font-size:10px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; color:#1e293b;">
+                <span>${r.name}</span>
+                <span style="color:#f59e0b;">${r.rating}</span>
+            </div>
+            <p style="color:#475569; margin-top:2px;">${r.comment}</p>
+        </div>
+    `).join('');
+
+    const modalBody = document.getElementById('darazModalBody');
+    modalBody.innerHTML = `
+        ${imageHtml}
+        <div style="padding: 6px 0;">
+            <div style="display:flex; gap:6px; align-items:center; margin-bottom:4px;">
+                ${discountBadge}
+                <span style="font-size:10px; color:${p.status === 'stockout' ? '#ef4444' : '#22c55e'}; font-weight:bold;">${p.status === 'stockout' ? '● স্টক আউট' : '● ইন স্টক'}</span>
+            </div>
+            <h2 style="font-size:13px; color:#1e293b; margin-bottom:6px;">${p.name}</h2>
+            <div style="display:flex; align-items:center; margin-bottom:8px;">
+                <span style="font-size:16px; font-weight:bold; color:#f85606;">৳ ${p.price}</span>
+                ${oldPriceHtml}
+            </div>
+            
+            <div style="background:#f1f5f9; padding:8px; border-radius:6px; font-size:10px; margin-bottom:10px;">
+                <b style="color:#2563eb; display:block; margin-bottom:3px;">📝 পণ্যের বিবরণ:</b>
+                <p style="color:#334155; line-height:1.4;">${p.desc || 'কোনো বিস্তারিত বিবরণ দেওয়া হয়নি।'}</p>
+            </div>
+
+            <button class="form-btn" style="background:#f85606; margin-bottom:10px;" onclick="closeModals(); startQuickOrder(${p.id})">
+                <i class="fa-solid fa-bag-shopping"></i> এখনই অর্ডার করুন
+            </button>
+
+            <hr style="border:0; border-top:1px solid #e2e8f0; margin-bottom:8px;">
+            <b style="font-size:11px; color:#1e293b; display:block; margin-bottom:6px;">⭐ গ্রাহকদের রিভিউ ও রেটিং</b>
+            <div style="max-height:110px; overflow-y:auto; margin-bottom:8px;" id="reviewListContainer">
+                ${reviewsHtml}
+            </div>
+
+            <div style="background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+                <b style="font-size:10px; color:#2563eb; display:block; margin-bottom:4px;">আপনার রিভিউ লিখুন:</b>
+                <input type="text" id="newReviewerName" placeholder="আপনার নাম" class="form-input" style="margin-bottom:4px; padding:4px;">
+                <textarea id="newReviewComment" placeholder="পণ্যটি কেমন লেগেছে..." class="form-input" style="margin-bottom:4px; height:35px; padding:4px; resize:none;"></textarea>
+                <button onclick="addCustomerReview(${p.id})" style="background:#10b981; color:white; border:none; padding:5px; font-size:10px; border-radius:4px; cursor:pointer; font-weight:bold; width:100%;">রিভিউ সাবমিট করুন</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('productDetailsModal').style.display = 'flex';
+}
+
+function addCustomerReview(productId) {
+    const nameInput = document.getElementById('newReviewerName').value.trim();
+    const commentInput = document.getElementById('newReviewComment').value.trim();
+
+    if(!nameInput || !commentInput) {
+        alert("আপনার নাম এবং রিভিউয়ের মন্তব্য লিখুন।");
+        return;
+    }
+
+    const p = products.find(item => item.id === productId);
+    if(p) {
+        if(!p.reviews) p.reviews = [];
+        p.reviews.push({
+            name: nameInput,
+            rating: "⭐⭐⭐⭐⭐",
+            comment: commentInput
+        });
+        localStorage.setItem('smartProducts', JSON.stringify(products));
+        alert("আপনার রিভিউ সফলভাবে যুক্ত হয়েছে!");
+        openDarazProductDetails(productId);
+    }
+}
+
 function toggleNotificationDropdown() {
     const dropdown = document.getElementById('notifDropdown');
-    if(dropdown.style.display === 'block') {
-        dropdown.style.display = 'none';
-    } else {
-        dropdown.style.display = 'block';
-    }
+    dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
 }
 
 function renderNotifications() {
@@ -164,7 +254,6 @@ function deleteProduct(id) {
     }
 }
 
-// ছবি ফাইল রিডার সহ পণ্য সেভ বা আপডেট ফাংশন
 function saveAdminProduct() {
     const editId = document.getElementById('editProductId').value;
     const name = document.getElementById('admName').value.trim();
@@ -172,7 +261,6 @@ function saveAdminProduct() {
     const oldPrice = document.getElementById('admOldPrice').value.trim();
     const status = document.getElementById('admStockStatus').value;
     const desc = document.getElementById('admDesc').value.trim();
-    
     const imageInput = document.getElementById('admImageFile');
 
     if(!name || !price) { alert("পণ্যের নাম ও বর্তমান মূল্য দিতে হবে।"); return; }
@@ -186,15 +274,19 @@ function saveAdminProduct() {
         reader.readAsDataURL(imageInput.files[0]);
     } else {
         let existingImg = "";
+        let existingReviews = [];
         if(editId) {
             let existingProd = products.find(item => item.id == editId);
-            if(existingProd) existingImg = existingProd.imageSrc || "";
+            if(existingProd) {
+                existingImg = existingProd.imageSrc || "";
+                existingReviews = existingProd.reviews || [];
+            }
         }
-        processProductSave(editId, name, price, oldPrice, status, desc, existingImg);
+        processProductSave(editId, name, price, oldPrice, status, desc, existingImg, existingReviews);
     }
 }
 
-function processProductSave(editId, name, price, oldPrice, status, desc, imageSrc) {
+function processProductSave(editId, name, price, oldPrice, status, desc, imageSrc, existingReviews = []) {
     if(editId) {
         let p = products.find(item => item.id == editId);
         if(p) {
@@ -214,7 +306,8 @@ function processProductSave(editId, name, price, oldPrice, status, desc, imageSr
             oldPrice,
             status,
             desc,
-            imageSrc
+            imageSrc,
+            reviews: existingReviews
         };
         products.push(newProd);
         alert("নতুন পণ্য সফলভাবে যুক্ত হয়েছে!");
@@ -293,10 +386,12 @@ function checkLoginState() {
         step2.style.display = 'none';
         step3.style.display = 'block';
         document.getElementById('loggedInEmail').innerText = `লগইন আছে: ${email}`;
+        
+        // প্রোফাইল ফর্মটি একদম ফাঁকা রাখা হলো যাতে কাস্টমার নিজের তথ্য নিজে বসাতে পারে
         document.getElementById('profileName').value = localStorage.getItem('profileName') || '';
-        document.getElementById('profilePhone').value = localStorage.getItem('profilePhone') || '+8809658777230';
-        document.getElementById('profileCity').value = localStorage.getItem('profileCity') || 'ময়মনসিংহ';
-        document.getElementById('profileAddress').value = localStorage.getItem('profileAddress') || 'সয়াইটপুর বাজার, ফুলবাড়িয়া';
+        document.getElementById('profilePhone').value = localStorage.getItem('profilePhone') || '';
+        document.getElementById('profileCity').value = localStorage.getItem('profileCity') || '';
+        document.getElementById('profileAddress').value = localStorage.getItem('profileAddress') || '';
     } else {
         step1.style.display = 'block';
         step2.style.display = 'none';
@@ -402,12 +497,12 @@ function renderOwnerOrdersList() {
     if(!container) return;
 
     if(allCustomerOrders.length === 0) {
-        container.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px; font-size:12px;">কোনো অর্ডার নেই।</p>`;
+        container.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px; font-size:11px;">কোনো অর্ডার নেই।</p>`;
         return;
     }
 
     container.innerHTML = allCustomerOrders.map((ord, index) => `
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px; margin-bottom:8px; font-size:11px;">
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px; margin-bottom:8px; font-size:10px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                 <b>অর্ডার আইডি: ${ord.id}</b>
                 <span style="color:#2563eb; font-weight:bold;">🤖 ${ord.status}</span>
@@ -415,13 +510,13 @@ function renderOwnerOrdersList() {
             <p><b>পণ্য:</b> ${ord.product} (${ord.price})</p>
             <p><b>ক্রেতা:</b> ${ord.customerName} - 📞 <a href="tel:${ord.customerPhone}" style="color:#f85606; font-weight:bold;">${ord.customerPhone}</a></p>
             <p><b>ঠিকানা:</b> ${ord.customerAddress}</p>
-            <p style="color:#64748b; font-size:10px; margin-top:2px;">সময়: ${ord.date}</p>
+            <p style="color:#64748b; font-size:9px; margin-top:2px;">সময়: ${ord.date}</p>
             
-            <div style="display:flex; gap:5px; margin-top:8px;">
-                <a href="tel:${ord.customerPhone}" style="flex:1; background:#22c55e; color:white; text-align:center; padding:5px; border-radius:3px; text-decoration:none; font-weight:bold;">
-                    <i class="fa-solid fa-phone"></i> হটলাইন থেকে কল করুন
+            <div style="display:flex; gap:5px; margin-top:6px;">
+                <a href="tel:${ord.customerPhone}" style="flex:1; background:#22c55e; color:white; text-align:center; padding:4px; border-radius:3px; text-decoration:none; font-weight:bold;">
+                    <i class="fa-solid fa-phone"></i> হটলাইন কল
                 </a>
-                <button onclick="deleteOwnerOrder(${index})" style="background:#ef4444; color:white; border:none; padding:5px 8px; border-radius:3px; cursor:pointer;">
+                <button onclick="deleteOwnerOrder(${index})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
@@ -438,14 +533,6 @@ function deleteOwnerOrder(index) {
     }
 }
 
-function deleteCurrentOrder() {
-    if(confirm("আপনি কি এই অর্ডারটি ডিলিট করতে চান?")) {
-        localStorage.removeItem('lastOrder');
-        alert("অর্ডার মুছে ফেলা হয়েছে!");
-        renderTrackingInfo();
-    }
-}
-
 function renderTrackingInfo() {
     const order = JSON.parse(localStorage.getItem('lastOrder'));
     const box = document.getElementById('trackingBody');
@@ -455,6 +542,7 @@ function renderTrackingInfo() {
         box.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">কোনো অর্ডার নেই।</p>`; 
         return; 
     }
+    
     box.innerHTML = `
         <p><b>অর্ডার আইডি:</b> ${order.id}</p>
         <p><b>পণ্য:</b> ${order.product} (${order.price})</p>
@@ -462,11 +550,9 @@ function renderTrackingInfo() {
         <div class="tracking-step" style="margin-top:8px;"><i class="fa-solid fa-robot"></i><div><b>এআই দ্বারা স্বয়ংক্রিয়ভাবে কনফার্ম হয়েছে</b></div></div>
         <div class="tracking-step"><i class="fa-solid fa-phone-volume"></i><div><b>হটলাইন থেকে ২৪ ঘণ্টার মধ্যে ফোন করা হবে</b></div></div>
         <div class="tracking-step"><i class="fa-solid fa-truck-fast"></i><div><span style="color:#f85606; font-weight:bold;">ডেলিভারি প্রসেস চলছে!</span></div></div>
-        
-        <hr style="margin: 10px 0; border:0; border-top:1px solid #e2e8f0;">
-        <button onclick="deleteCurrentOrder()" style="width:100%; background:#ef4444; color:white; border:none; padding:8px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:11px;">
-            <i class="fa-solid fa-trash"></i> ভুল অর্ডার ডিলিট করুন
-        </button>
+        <p style="font-size: 10px; color: #16a34a; margin-top: 10px; text-align: center; font-weight: bold;">
+            ℹ️ অর্ডার কনফার্ম হয়ে গেছে। কোনো পরিবর্তনের জন্য হটলাইনে যোগাযোগ করুন।
+        </p>
     `;
 }
 
