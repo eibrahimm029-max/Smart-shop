@@ -25,19 +25,16 @@
         </div>
 
         <div class="header-right-icons">
-            <!-- Notification Bell Icon -->
             <div class="bell-icon-wrapper" onclick="toggleNotificationDropdown()">
                 <i class="fa-solid fa-bell"></i>
                 <span class="bell-badge" id="notifBadge">1</span>
-                <!-- Notification Dropdown Menu -->
                 <div class="notification-dropdown" id="notifDropdown">
                     <div class="notif-header">এআই ও অফার নোটিফিকেশন</div>
                     <div class="notif-list" id="notifListContainer">
-                        <div class="notif-item">🤖 এআই সিস্টেম প্রস্তুত রয়েছে। অর্ডার করলেই ইনস্ট্যান্ট নোটিফিকেশন পাবেন।</div>
+                        <div class="notif-item">🤖 এআই সিস্টেম প্রস্তুত রয়েছে।</div>
                     </div>
                 </div>
             </div>
-            <!-- Profile Icon -->
             <div class="header-profile-icon" onclick="openAccountModal(this)">
                 <i class="fa-solid fa-user-circle"></i>
             </div>
@@ -46,20 +43,15 @@
 
     <!-- Main Container -->
     <div class="container">
-        <!-- Banner & Media Section -->
+        <!-- Banner Section (Video Removed) -->
         <div class="banner-video-section">
             <div class="banner-text">
-                <h2>এআই স্মার্ট গ্যাজেট কার্নিভাল</h2>
-                <p>আমাদের নিজস্ব এআই সিস্টেম দ্বারা অর্ডার নিশ্চিতকরণ সেবা।</p>
-            </div>
-            <div class="promo-video-box">
-                <video autoplay muted loop playsinline width="100%" style="border-radius: 8px; max-height: 150px; object-fit: cover;">
-                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-                </video>
+                <h2>এআই স্মার্ট গ্যাজেট কার্নিভাল ২০২৬</h2>
+                <p>সেরা অফার ও ডিসকাউন্টে প্রিমিয়াম গ্যাজেট কিনুন ক্যাশ অন ডেলিভারিতে।</p>
             </div>
         </div>
 
-        <!-- Products Section Header with Owner Buttons -->
+        <!-- Products Section Header -->
         <div class="section-flex-header">
             <h3 class="section-title">সকল ট্রেন্ডিং পণ্য</h3>
             <div style="display: flex; gap: 5px;">
@@ -142,9 +134,9 @@
             </div>
             <div id="checkoutDetails" style="font-size:12px; margin-bottom:10px; background:#f8fafc; padding:8px; border-radius:4px;"></div>
             <p style="font-size: 11px; color: #15803d; margin-bottom: 10px; font-weight: bold;">
-                🤖 অর্ডার সাবমিট করার সাথে সাথেই আমাদের এআই সিস্টেম এটি স্বয়ংক্রিয়ভাবে কনফার্ম করে দেবে এবং আপনাকে নোটিফিকেশন পাঠিয়ে দেবে।
+                🤖 অর্ডার সাবমিট করার সাথে সাথেই আমাদের এআই সিস্টেম এটি কনফার্ম করে দেবে।
             </p>
-            <button class="form-btn" onclick="confirmFinalOrder()">অর্ডার কনফার্ম ও এআই প্রসেস চালু করুন</button>
+            <button class="form-btn" onclick="confirmFinalOrder()">অর্ডার কনফার্ম করুন</button>
         </div>
     </div>
 
@@ -163,18 +155,21 @@
     <div class="modal-screen" id="adminModal">
         <div class="modal-content">
             <div class="modal-header">
-                <span id="adminModalTitle">মালিকের প্যানেল - পণ্য ও নোটিফিকেশন</span>
+                <span id="adminModalTitle">মালিকের প্যানেল - পণ্য ও অফার</span>
                 <span onclick="closeModals()">&times;</span>
             </div>
             <input type="hidden" id="editProductId">
             <div class="form-group"><label>পণ্যের নাম</label><input type="text" id="admName" placeholder="যেমন: স্মার্ট ওয়াচ"></div>
-            <div class="form-group"><label>মূল্য (টাকা)</label><input type="text" id="admPrice" placeholder="১৫০০ টাকা"></div>
             
-            <!-- Gallery Multiple Image Selection -->
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group" style="flex:1;"><label>বর্তমান মূল্য (টাকা)</label><input type="number" id="admPrice" placeholder="৮০০"></div>
+                <div class="form-group" style="flex:1;"><label>পূর্বের মূল্য (কাটা মূল্য)</label><input type="number" id="admOldPrice" placeholder="১০০০"></div>
+            </div>
+            
+            <!-- Real Gallery Image Upload -->
             <div class="form-group">
-                <label>গ্যালারি থেকে একাধিক ছবি সিলেক্ট করুন</label>
-                <input type="file" id="admImages" multiple accept="image/*" style="font-size:11px;">
-                <input type="text" id="admIcon" placeholder="বা ইমোজি/প্রিভিউ (যেমন: ⌚)" style="margin-top:5px;">
+                <label>গ্যালারি থেকে পণ্যের ছবি সিলেক্ট করুন</label>
+                <input type="file" id="admImageFile" accept="image/*" style="font-size:11px;">
             </div>
 
             <div class="form-group"><label>স্টক স্ট্যাটাস</label>
@@ -200,7 +195,7 @@
                 <span onclick="closeModals()">&times;</span>
             </div>
             <p style="font-size: 11px; color: #64748b; margin-bottom: 10px;">
-                এআই দ্বারা স্বয়ংক্রিয়ভাবে কনফার্ম হওয়া অর্ডারগুলো এখানে জমা রয়েছে। আপনি হটলাইন থেকে কল করতে পারবেন।
+                এআই দ্বারা কনফার্ম হওয়া অর্ডারসমূহ। হটলাইন থেকে কল করতে পারবেন।
             </p>
             <div id="ownerOrdersContainer" style="max-height: 300px; overflow-y: auto;"></div>
         </div>
@@ -214,7 +209,7 @@
                 <span onclick="closeModals()">&times;</span>
             </div>
             <div class="chat-body" id="chatBody" style="flex:1; overflow-y:auto; font-size:11px; background:#f8fafc; padding:8px; border-radius:4px; margin-bottom:8px;">
-                <div style="background:#e2e8f0; padding:6px; border-radius:6px; margin-bottom:6px;">হ্যালো! আমি আপনার স্টোরের নিজস্ব এআই অ্যাসিস্ট্যান্ট। অর্ডার বা পণ্য সম্পর্কে কিছু জানার থাকলে বলুন।</div>
+                <div style="background:#e2e8f0; padding:6px; border-radius:6px; margin-bottom:6px;">হ্যালো! আমি আপনার স্টোরের এআই অ্যাসিস্ট্যান্ট।</div>
             </div>
             <div style="display:flex;">
                 <input type="text" id="chatInput" placeholder="এআই কে কিছু জিগ্যেস করুন..." style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; outline:none;" onkeypress="if(event.key==='Enter')sendChatMessage()">
