@@ -342,7 +342,9 @@ function openAccountModal(element) {
     checkLoginState();
 }
 
-let generatedOtp = "", savedEmail = "";
+// পার্মানেন্ট ওটিপি ভেরিয়েবল (লোকালস্টোরেজে সেভ থাকবে যাতে রিলোড বা মডাল বন্ধ হলেও কোড না হারায়)
+let generatedOtp = localStorage.getItem('currentOtp') || "";
+let savedEmail = localStorage.getItem('currentEmail') || "";
 
 function sendOtp() {
     const emailInput = document.getElementById('userEmail');
@@ -350,46 +352,61 @@ function sendOtp() {
     const email = emailInput.value.trim();
     if(!email.includes('@')) { alert("সঠিক ইমেইল দিন"); return; }
     
-    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    savedEmail = email;
-    
-    let realTimeMsg = `[অটো-এআই ওটিপি]: আপনার কোড হলো ${generatedOtp}`;
-    notifications.unshift(realTimeMsg);
-    localStorage.setItem('siteNotifications', JSON.stringify(notifications));
-    renderNotifications();
+    // যদি অলরেডি একটি কোড থেকে থাকে, তবে সেটিই থাকবে। নতুন কোড শুধু তখনই তৈরি হবে যখন আগের কোড না থাকে।
+    if (!generatedOtp || savedEmail !== email) {
+        generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+        savedEmail = email;
+        localStorage.setItem('currentOtp', generatedOtp);
+        localStorage.setItem('currentEmail', savedEmail);
+        
+        let realTimeMsg = `[অটো-এআই ওটিপি]: আপনার কোড হলো ${generatedOtp}`;
+        notifications.unshift(realTimeMsg);
+        localStorage.setItem('siteNotifications', JSON.stringify(notifications));
+        renderNotifications();
+    }
 
     document.getElementById('accountStep1').style.display = 'none';
     document.getElementById('accountStep2').style.display = 'block';
-    document.getElementById('otpInstructionText').innerText = `আপনার ${email} জিমেইলের জন্য ওটিপি জেনারেট হয়েছে। সিস্টেম এটি স্বয়ংক্রিয়ভাবে বসিয়ে দিচ্ছে...`;
+    document.getElementById('otpInstructionText').innerHTML = `আপনার <b>${email}</b> জিমেইলের জন্য ওটিপি: <span style="background:#e0f2fe; color:#0284c7; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:12px;">${generatedOtp}</span> (নিচে কোডটি বসিয়ে ভেরিফাই করুন)`;
 
-    // অটোমেটিক কোড ইনপুট বক্সে বসে ভেরিফাই হয়ে যাবে
-    setTimeout(() => {
-        const otpInput = document.getElementById('otpCode');
-        if(otpInput) {
-            otpInput.value = generatedOtp;
-            verifyOtp();
-        }
-    }, 1000);
+    // ইনপুট বক্সে কোডটি বসিয়ে দেওয়া (অটো ফিল)
+    const otpInput = document.getElementById('otpCode');
+    if(otpInput) {
+        otpInput.value = generatedOtp;
+    }
 }
 
 function verifyOtp() {
     const otpInput = document.getElementById('otpCode');
     if(!otpInput) return;
     
-    if(otpInput.value.trim() === generatedOtp) {
+    // যদি ইনপুট বক্স খালি থাকে কিন্তু মেমোরিতে কোড থাকে, তবে সেটি অটো নিয়ে নেবে
+    let enteredCode = otpInput.value.trim();
+    if(!enteredCode && generatedOtp) {
+        enteredCode = generatedOtp;
+        otpInput.value = generatedOtp;
+    }
+    
+    if(enteredCode === generatedOtp) {
         localStorage.setItem('smartTechEmail', savedEmail);
         let defaultName = savedEmail.split('@')[0];
         if(!localStorage.getItem('profileName')) {
             localStorage.setItem('profileName', defaultName);
         }
+        
+        // সফল হওয়ার পর ওটিপি মেমোরি পরিষ্কার করা
+        localStorage.removeItem('currentOtp');
+        localStorage.removeItem('currentEmail');
+        generatedOtp = "";
+        
         checkOwnerStatus();
         displayProducts(products);
         checkLoginState();
         
-        document.getElementById('otpCode').value = '';
-        alert("সফলভাবে অটো-লগইন সম্পন্ন হয়েছে!");
+        otpInput.value = '';
+        alert("সফলভাবে লগইন সম্পন্ন হয়েছে!");
     } else { 
-        alert("কোড মিলছে না!"); 
+        alert("কোড মিলছে না! সঠিক কোডটি দিন।"); 
     }
 }
 
@@ -410,9 +427,19 @@ function checkLoginState() {
         document.getElementById('profileCity').value = localStorage.getItem('profileCity') || '';
         document.getElementById('profileAddress').value = localStorage.getItem('profileAddress') || '';
     } else {
-        step1.style.display = 'block';
-        step2.style.display = 'none';
-        step3.style.display = 'none';
+        // যদি লগইন না থাকে কিন্তু ওটিপি স্টেপে থাকে
+        if(savedEmail && generatedOtp) {
+            step1.style.display = 'none';
+            step2.style.display = 'block';
+            step3.style.display = 'none';
+            document.getElementById('otpInstructionText').innerHTML = `আপনার <b>${savedEmail}</b> জিমেইলের জন্য ওটিপি: <span style="background:#e0f2fe; color:#0284c7; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:12px;">${generatedOtp}</span>`;
+            const otpInput = document.getElementById('otpCode');
+            if(otpInput && !otpInput.value) otpInput.value = generatedOtp;
+        } else {
+            step1.style.display = 'block';
+            step2.style.display = 'none';
+            step3.style.display = 'none';
+        }
     }
 }
 
@@ -427,6 +454,10 @@ function saveProfile() {
 
 function logout() {
     localStorage.removeItem('smartTechEmail');
+    localStorage.removeItem('currentOtp');
+    localStorage.removeItem('currentEmail');
+    generatedOtp = "";
+    savedEmail = "";
     isOwner = false;
     checkOwnerStatus();
     displayProducts(products);
