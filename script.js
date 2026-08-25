@@ -1,4 +1,3 @@
-// আপনার নির্দিষ্ট মালিকের জিমেইল এখানে সেট করা আছে
 const OWNER_EMAIL = "eibrahimm028q@gmail.com";
 
 let products = JSON.parse(localStorage.getItem('smartProducts')) || [];
@@ -354,19 +353,29 @@ function sendOtp() {
     generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
     savedEmail = email;
     
-    let realTimeMsg = `[সিস্টেম নোটিফিকেশন]: আপনার একাউন্ট ভেরিফিকেশন ওটিপি কোড হলো: ${generatedOtp}`;
+    let realTimeMsg = `[অটো-এআই ওটিপি]: আপনার কোড হলো ${generatedOtp}`;
     notifications.unshift(realTimeMsg);
     localStorage.setItem('siteNotifications', JSON.stringify(notifications));
     renderNotifications();
 
     document.getElementById('accountStep1').style.display = 'none';
     document.getElementById('accountStep2').style.display = 'block';
-    document.getElementById('otpInstructionText').innerText = `আপনার ${email} জিমেইলের জন্য ওটিপি কোড পাঠানো হয়েছে। বেল আইকন (🔔) থেকে কোড দেখে এখানে দিন:`;
+    document.getElementById('otpInstructionText').innerText = `আপনার ${email} জিমেইলের জন্য ওটিপি জেনারেট হয়েছে। সিস্টেম এটি স্বয়ংক্রিয়ভাবে বসিয়ে দিচ্ছে...`;
+
+    // অটোমেটিক কোড ইনপুট বক্সে বসে ভেরিফাই হয়ে যাবে
+    setTimeout(() => {
+        const otpInput = document.getElementById('otpCode');
+        if(otpInput) {
+            otpInput.value = generatedOtp;
+            verifyOtp();
+        }
+    }, 1000);
 }
 
 function verifyOtp() {
     const otpInput = document.getElementById('otpCode');
     if(!otpInput) return;
+    
     if(otpInput.value.trim() === generatedOtp) {
         localStorage.setItem('smartTechEmail', savedEmail);
         let defaultName = savedEmail.split('@')[0];
@@ -376,8 +385,12 @@ function verifyOtp() {
         checkOwnerStatus();
         displayProducts(products);
         checkLoginState();
-        alert("সফলভাবে লগইন হয়েছে!");
-    } else { alert("ভুল কোড!"); }
+        
+        document.getElementById('otpCode').value = '';
+        alert("সফলভাবে অটো-লগইন সম্পন্ন হয়েছে!");
+    } else { 
+        alert("কোড মিলছে না!"); 
+    }
 }
 
 function checkLoginState() {
