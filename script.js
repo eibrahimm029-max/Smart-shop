@@ -1,3 +1,6 @@
+// আপনার নির্দিষ্ট মালিকের জিমেইল এখানে সেট করা আছে
+const OWNER_EMAIL = "eibrahimm028q@gmail.com";
+
 let products = JSON.parse(localStorage.getItem('smartProducts')) || [];
 let notifications = JSON.parse(localStorage.getItem('siteNotifications')) || [
     "🤖 এআই সিস্টেম সক্রিয়: যেকোনো পণ্যে ইনস্ট্যান্ট এআই কনফার্মেশন সুবিধা।"
@@ -5,22 +8,36 @@ let notifications = JSON.parse(localStorage.getItem('siteNotifications')) || [
 
 let allCustomerOrders = JSON.parse(localStorage.getItem('allCustomerOrders')) || [];
 let selectedProductForOrder = null;
-let isOwnerLoggedIn = false;
+let isOwner = false;
+
+function checkOwnerStatus() {
+    const currentEmail = localStorage.getItem('smartTechEmail');
+    if (currentEmail && currentEmail.toLowerCase() === OWNER_EMAIL.toLowerCase()) {
+        isOwner = true;
+        const bar = document.getElementById('ownerQuickBar');
+        if(bar) bar.style.display = 'flex';
+    } else {
+        isOwner = false;
+        const bar = document.getElementById('ownerQuickBar');
+        if(bar) bar.style.display = 'none';
+    }
+}
 
 function displayProducts(items) {
     const container = document.getElementById('productContainer');
     if(!container) return;
     if(items.length === 0) {
-        container.innerHTML = `<div class="no-result" style="grid-column: span 2; text-align:center; color:#64748b; padding:20px; font-size:11px;">কোনো পণ্য পাওয়া যায়নি। নতুন পণ্য যোগ করুন।</div>`;
+        container.innerHTML = `<div class="no-result" style="grid-column: span 2; text-align:center; color:#64748b; padding:20px; font-size:11px;">কোনো পণ্য পাওয়া যায়নি।</div>`;
         return;
     }
     
     container.innerHTML = items.map(p => {
         let isStockOut = p.status === 'stockout';
-        let ownerControls = isOwnerLoggedIn ? `
-            <div class="owner-action-box" onclick="event.stopPropagation()">
-                <button class="edit-btn" onclick="openEditProduct(${p.id})">এডিট</button>
-                <button class="del-btn" onclick="deleteProduct(${p.id})">ডিলিট</button>
+        
+        let ownerControls = isOwner ? `
+            <div class="owner-action-box" onclick="event.stopPropagation()" style="display:flex; gap:4px; margin-top:6px;">
+                <button class="edit-btn" onclick="openEditProduct(${p.id})" style="flex:1; background:#f59e0b; color:white; border:none; padding:4px; border-radius:3px; font-size:9px; font-weight:bold; cursor:pointer;">এডিট</button>
+                <button class="del-btn" onclick="deleteProduct(${p.id})" style="flex:1; background:#ef4444; color:white; border:none; padding:4px; border-radius:3px; font-size:9px; font-weight:bold; cursor:pointer;">ডিলিট</button>
             </div>
         ` : '';
 
@@ -59,8 +76,55 @@ function displayProducts(items) {
 displayProducts(products);
 
 window.onload = function() {
+    checkOwnerStatus();
     renderNotifications();
     updateOwnerOrderBadge();
+}
+
+function openOwnerMasterModal(tab) {
+    if(!isOwner) {
+        alert("আপনার এই প্যানেলটি দেখার অনুমতি নেই!");
+        return;
+    }
+    closeModals();
+    switchAdminTab(tab);
+    if(tab === 'add') {
+        document.getElementById('editProductId').value = '';
+        document.getElementById('admName').value = '';
+        document.getElementById('admPrice').value = '';
+        document.getElementById('admOldPrice').value = '';
+        document.getElementById('admDesc').value = '';
+        document.getElementById('admImageFile').value = '';
+        document.getElementById('adminModalTitle').innerText = "নতুন পণ্য যুক্ত করুন";
+        document.getElementById('saveProductBtn').innerText = "নতুন পণ্য যুক্ত করুন";
+    } else {
+        renderOwnerOrdersList();
+    }
+    document.getElementById('ownerMasterModal').style.display = 'flex';
+}
+
+function switchAdminTab(tab) {
+    const addSec = document.getElementById('adminAddProductSection');
+    const orderSec = document.getElementById('adminOrdersSection');
+    const btnAdd = document.getElementById('tabBtnAdd');
+    const btnOrders = document.getElementById('tabBtnOrders');
+
+    if(tab === 'add') {
+        addSec.style.display = 'block';
+        orderSec.style.display = 'none';
+        btnAdd.style.background = '#2563eb';
+        btnAdd.style.color = 'white';
+        btnOrders.style.background = '#cbd5e1';
+        btnOrders.style.color = '#1e293b';
+    } else {
+        addSec.style.display = 'none';
+        orderSec.style.display = 'block';
+        btnOrders.style.background = '#2563eb';
+        btnOrders.style.color = 'white';
+        btnAdd.style.background = '#cbd5e1';
+        btnAdd.style.color = '#1e293b';
+        renderOwnerOrdersList();
+    }
 }
 
 function openDarazProductDetails(productId) {
@@ -69,8 +133,8 @@ function openDarazProductDetails(productId) {
 
     if(!p.reviews) {
         p.reviews = [
-            { name: "রহিম উদ্দিন", rating: "⭐⭐⭐⭐⭐", comment: "খুব চমৎকার এবং অরিজিনাল পণ্য! সময়মতো পেয়েছি।" },
-            { name: "ফাহিম আহমেদ", rating: "⭐⭐⭐⭐", comment: "ভালো কাজ করে, তবে ডেলিভারি একটু লেট হয়েছিল।" }
+            { name: "রহিম উদ্দিন", rating: "⭐⭐⭐⭐⭐", comment: "খুব চমৎকার এবং অরিজিনাল পণ্য!" },
+            { name: "ফাহিম আহমেদ", rating: "⭐⭐⭐⭐", comment: "ভালো কাজ করে, সময়মতো পেয়েছি।" }
         ];
     }
 
@@ -120,115 +184,15 @@ function openDarazProductDetails(productId) {
 
             <hr style="border:0; border-top:1px solid #e2e8f0; margin-bottom:8px;">
             <b style="font-size:11px; color:#1e293b; display:block; margin-bottom:6px;">⭐ গ্রাহকদের রিভিউ ও রেটিং</b>
-            <div style="max-height:110px; overflow-y:auto; margin-bottom:8px;" id="reviewListContainer">
-                ${reviewsHtml}
-            </div>
-
-            <div style="background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
-                <b style="font-size:10px; color:#2563eb; display:block; margin-bottom:4px;">আপনার রিভিউ লিখুন:</b>
-                <input type="text" id="newReviewerName" placeholder="আপনার নাম" class="form-input" style="margin-bottom:4px; padding:4px;">
-                <textarea id="newReviewComment" placeholder="পণ্যটি কেমন লেগেছে..." class="form-input" style="margin-bottom:4px; height:35px; padding:4px; resize:none;"></textarea>
-                <button onclick="addCustomerReview(${p.id})" style="background:#10b981; color:white; border:none; padding:5px; font-size:10px; border-radius:4px; cursor:pointer; font-weight:bold; width:100%;">রিভিউ সাবমিট করুন</button>
-            </div>
+            <div style="max-height:110px; overflow-y:auto; margin-bottom:8px;">${reviewsHtml}</div>
         </div>
     `;
 
     document.getElementById('productDetailsModal').style.display = 'flex';
 }
 
-function addCustomerReview(productId) {
-    const nameInput = document.getElementById('newReviewerName').value.trim();
-    const commentInput = document.getElementById('newReviewComment').value.trim();
-
-    if(!nameInput || !commentInput) {
-        alert("আপনার নাম এবং রিভিউয়ের মন্তব্য লিখুন।");
-        return;
-    }
-
-    const p = products.find(item => item.id === productId);
-    if(p) {
-        if(!p.reviews) p.reviews = [];
-        p.reviews.push({
-            name: nameInput,
-            rating: "⭐⭐⭐⭐⭐",
-            comment: commentInput
-        });
-        localStorage.setItem('smartProducts', JSON.stringify(products));
-        alert("আপনার রিভিউ সফলভাবে যুক্ত হয়েছে!");
-        openDarazProductDetails(productId);
-    }
-}
-
-function toggleNotificationDropdown() {
-    const dropdown = document.getElementById('notifDropdown');
-    dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
-}
-
-function renderNotifications() {
-    const listContainer = document.getElementById('notifListContainer');
-    const badge = document.getElementById('notifBadge');
-    if(!listContainer) return;
-    
-    badge.innerText = notifications.length;
-    listContainer.innerHTML = notifications.map(n => `<div class="notif-item">🤖 ${n}</div>`).join('');
-}
-
-function searchProducts() {
-    const searchInput = document.getElementById('searchInput');
-    if(!searchInput) return;
-    const q = searchInput.value.toLowerCase().trim();
-    const filtered = products.filter(p => p.name.toLowerCase().includes(q));
-    displayProducts(filtered);
-}
-
-function closeModals() {
-    document.querySelectorAll('.modal-screen').forEach(m => m.style.display = 'none');
-}
-
-function setActiveNav(element) {
-    if(!element) return;
-    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-    element.classList.add('active');
-}
-
-function switchTab(tabName, element) {
-    setActiveNav(element);
-    closeModals();
-    window.scrollTo({top: 0, behavior: 'smooth'});
-}
-
-function openAccountModal(element) {
-    setActiveNav(element);
-    closeModals();
-    const modal = document.getElementById('accountModal');
-    if(modal) modal.style.display = 'flex';
-    checkLoginState();
-}
-
-function requestAdminAccess() {
-    let pass = prompt("মালিকের পাসওয়ার্ড দিন:");
-    if(pass === "1234") {
-        isOwnerLoggedIn = true;
-        displayProducts(products);
-        closeModals();
-        
-        document.getElementById('editProductId').value = '';
-        document.getElementById('admName').value = '';
-        document.getElementById('admPrice').value = '';
-        document.getElementById('admOldPrice').value = '';
-        document.getElementById('admDesc').value = '';
-        document.getElementById('admImageFile').value = '';
-        document.getElementById('adminModalTitle').innerText = "নতুন পণ্য যোগ করুন (মালিক)";
-        document.getElementById('saveProductBtn').innerText = "নতুন পণ্য যুক্ত করুন";
-
-        const adm = document.getElementById('adminModal');
-        if(adm) adm.style.display = 'flex';
-    } else if(pass !== null) {
-        alert("ভুল পাসওয়ার্ড!");
-    }
-}
-
 function openEditProduct(id) {
+    if(!isOwner) return;
     const p = products.find(item => item.id === id);
     if(!p) return;
 
@@ -238,14 +202,16 @@ function openEditProduct(id) {
     document.getElementById('admOldPrice').value = p.oldPrice || '';
     document.getElementById('admDesc').value = p.desc || '';
     document.getElementById('admStockStatus').value = p.status || 'available';
-    document.getElementById('adminModalTitle').innerText = "পণ্যের দাম বা বিবরণ পরিবর্তন করুন";
+    document.getElementById('adminModalTitle').innerText = "পণ্যের তথ্য পরিবর্তন (Edit)";
     document.getElementById('saveProductBtn').innerText = "পরিবর্তন সেভ করুন";
 
     closeModals();
-    document.getElementById('adminModal').style.display = 'flex';
+    document.getElementById('ownerMasterModal').style.display = 'flex';
+    switchAdminTab('add');
 }
 
 function deleteProduct(id) {
+    if(!isOwner) return;
     if(confirm("আপনি কি নিশ্চিতভাবে এই পণ্যটি ডিলিট করতে চান?")) {
         products = products.filter(item => item.id !== id);
         localStorage.setItem('smartProducts', JSON.stringify(products));
@@ -255,6 +221,7 @@ function deleteProduct(id) {
 }
 
 function saveAdminProduct() {
+    if(!isOwner) return;
     const editId = document.getElementById('editProductId').value;
     const name = document.getElementById('admName').value.trim();
     const price = document.getElementById('admPrice').value.trim();
@@ -319,6 +286,7 @@ function processProductSave(editId, name, price, oldPrice, status, desc, imageSr
 }
 
 function sendAdminBroadcast() {
+    if(!isOwner) return;
     const text = document.getElementById('admAnnounce').value.trim();
     if(!text) { alert("নোটিফিকেশনের টেক্সট লিখুন।"); return; }
 
@@ -330,22 +298,53 @@ function sendAdminBroadcast() {
     closeModals();
 }
 
-function openTrackingModal(element) {
-    setActiveNav(element);
-    closeModals();
-    const trk = document.getElementById('trackingModal');
-    if(trk) trk.style.display = 'flex';
-    renderTrackingInfo();
+function toggleNotificationDropdown() {
+    const dropdown = document.getElementById('notifDropdown');
+    dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
 }
 
-function openChatModal(element) {
+function renderNotifications() {
+    const listContainer = document.getElementById('notifListContainer');
+    const badge = document.getElementById('notifBadge');
+    if(!listContainer) return;
+    badge.innerText = notifications.length;
+    listContainer.innerHTML = notifications.map(n => `<div class="notif-item">🤖 ${n}</div>`).join('');
+}
+
+function searchProducts() {
+    const searchInput = document.getElementById('searchInput');
+    if(!searchInput) return;
+    const q = searchInput.value.toLowerCase().trim();
+    const filtered = products.filter(p => p.name.toLowerCase().includes(q));
+    displayProducts(filtered);
+}
+
+function closeModals() {
+    document.querySelectorAll('.modal-screen').forEach(m => m.style.display = 'none');
+}
+
+function setActiveNav(element) {
+    if(!element) return;
+    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+}
+
+function switchTab(tabName, element) {
     setActiveNav(element);
     closeModals();
-    const chat = document.getElementById('chatModal');
-    if(chat) chat.style.display = 'flex';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function openAccountModal(element) {
+    setActiveNav(element);
+    closeModals();
+    const modal = document.getElementById('accountModal');
+    if(modal) modal.style.display = 'flex';
+    checkLoginState();
 }
 
 let generatedOtp = "", savedEmail = "";
+
 function sendOtp() {
     const emailInput = document.getElementById('userEmail');
     if(!emailInput) return;
@@ -355,10 +354,14 @@ function sendOtp() {
     generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
     savedEmail = email;
     
-    alert(`🤖 [এআই নোটিফিকেশন]: আপনার ভেরিফিকেশন কোড হলো: ${generatedOtp}`);
-    
+    let realTimeMsg = `[সিস্টেম নোটিফিকেশন]: আপনার একাউন্ট ভেরিফিকেশন ওটিপি কোড হলো: ${generatedOtp}`;
+    notifications.unshift(realTimeMsg);
+    localStorage.setItem('siteNotifications', JSON.stringify(notifications));
+    renderNotifications();
+
     document.getElementById('accountStep1').style.display = 'none';
     document.getElementById('accountStep2').style.display = 'block';
+    document.getElementById('otpInstructionText').innerText = `আপনার ${email} জিমেইলের জন্য ওটিপি কোড পাঠানো হয়েছে। বেল আইকন (🔔) থেকে কোড দেখে এখানে দিন:`;
 }
 
 function verifyOtp() {
@@ -370,7 +373,10 @@ function verifyOtp() {
         if(!localStorage.getItem('profileName')) {
             localStorage.setItem('profileName', defaultName);
         }
+        checkOwnerStatus();
+        displayProducts(products);
         checkLoginState();
+        alert("সফলভাবে লগইন হয়েছে!");
     } else { alert("ভুল কোড!"); }
 }
 
@@ -385,9 +391,7 @@ function checkLoginState() {
         step1.style.display = 'none';
         step2.style.display = 'none';
         step3.style.display = 'block';
-        document.getElementById('loggedInEmail').innerText = `লগইন আছে: ${email}`;
-        
-        // প্রোফাইল ফর্মটি একদম ফাঁকা রাখা হলো যাতে কাস্টমার নিজের তথ্য নিজে বসাতে পারে
+        document.getElementById('loggedInEmail').innerText = `লগইন আছে: ${email} ${email.toLowerCase() === OWNER_EMAIL.toLowerCase() ? '(👑 ওনার মোড অ্যাক্টিভ)' : ''}`;
         document.getElementById('profileName').value = localStorage.getItem('profileName') || '';
         document.getElementById('profilePhone').value = localStorage.getItem('profilePhone') || '';
         document.getElementById('profileCity').value = localStorage.getItem('profileCity') || '';
@@ -410,7 +414,11 @@ function saveProfile() {
 
 function logout() {
     localStorage.removeItem('smartTechEmail');
+    isOwner = false;
+    checkOwnerStatus();
+    displayProducts(products);
     checkLoginState();
+    alert("লগআউট সম্পন্ন হয়েছে!");
 }
 
 function startQuickOrder(productId) {
@@ -456,13 +464,11 @@ function confirmFinalOrder() {
     };
     
     localStorage.setItem('lastOrder', JSON.stringify(orderData));
-
     allCustomerOrders.unshift(orderData);
     localStorage.setItem('allCustomerOrders', JSON.stringify(allCustomerOrders));
     updateOwnerOrderBadge();
 
-    let aiNotificationText = `প্রিয় ${userName}, আপনার অর্ডারটি (${orderId}) এআই সিস্টেম দ্বারা কনফার্ম হয়েছে! পণ্যের নাম: ${selectedProductForOrder.name}, দাম: ৳ ${selectedProductForOrder.price}, ঠিকানা: ${userAddress}. ২৪ ঘণ্টার মধ্যে হটলাইন থেকে কল দেওয়া হবে।`;
-    
+    let aiNotificationText = `প্রিয় ${userName}, আপনার অর্ডারটি (${orderId}) কনফার্ম হয়েছে! পণ্যের নাম: ${selectedProductForOrder.name}. ২৪ ঘণ্টার মধ্যে কল দেওয়া হবে।`;
     notifications.unshift(aiNotificationText);
     localStorage.setItem('siteNotifications', JSON.stringify(notifications));
     renderNotifications();
@@ -481,18 +487,8 @@ function updateOwnerOrderBadge() {
     }
 }
 
-function openOwnerOrdersModal() {
-    let pass = prompt("মালিকের পাসওয়ার্ড দিন:");
-    if(pass === "1234") {
-        closeModals();
-        renderOwnerOrdersList();
-        document.getElementById('ownerOrdersModal').style.display = 'flex';
-    } else if(pass !== null) {
-        alert("ভুল পাসওয়ার্ড!");
-    }
-}
-
 function renderOwnerOrdersList() {
+    if(!isOwner) return;
     const container = document.getElementById('ownerOrdersContainer');
     if(!container) return;
 
@@ -510,13 +506,12 @@ function renderOwnerOrdersList() {
             <p><b>পণ্য:</b> ${ord.product} (${ord.price})</p>
             <p><b>ক্রেতা:</b> ${ord.customerName} - 📞 <a href="tel:${ord.customerPhone}" style="color:#f85606; font-weight:bold;">${ord.customerPhone}</a></p>
             <p><b>ঠিকানা:</b> ${ord.customerAddress}</p>
-            <p style="color:#64748b; font-size:9px; margin-top:2px;">সময়: ${ord.date}</p>
             
             <div style="display:flex; gap:5px; margin-top:6px;">
                 <a href="tel:${ord.customerPhone}" style="flex:1; background:#22c55e; color:white; text-align:center; padding:4px; border-radius:3px; text-decoration:none; font-weight:bold;">
                     <i class="fa-solid fa-phone"></i> হটলাইন কল
                 </a>
-                <button onclick="deleteOwnerOrder(${index})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">
+                <button onclick="deleteOwnerOrder(${index})" style="background:#ef4444; color:white; border-radius:3px; border:none; padding:4px 8px; cursor:pointer;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
@@ -525,12 +520,21 @@ function renderOwnerOrdersList() {
 }
 
 function deleteOwnerOrder(index) {
+    if(!isOwner) return;
     if(confirm("আপনি কি এই অর্ডারটি মুছে ফেলতে চান?")) {
         allCustomerOrders.splice(index, 1);
         localStorage.setItem('allCustomerOrders', JSON.stringify(allCustomerOrders));
         renderOwnerOrdersList();
         updateOwnerOrderBadge();
     }
+}
+
+function openTrackingModal(element) {
+    setActiveNav(element);
+    closeModals();
+    const trk = document.getElementById('trackingModal');
+    if(trk) trk.style.display = 'flex';
+    renderTrackingInfo();
 }
 
 function renderTrackingInfo() {
@@ -547,13 +551,17 @@ function renderTrackingInfo() {
         <p><b>অর্ডার আইডি:</b> ${order.id}</p>
         <p><b>পণ্য:</b> ${order.product} (${order.price})</p>
         <p><b>সময়:</b> ${order.date}</p>
-        <div class="tracking-step" style="margin-top:8px;"><i class="fa-solid fa-robot"></i><div><b>এআই দ্বারা স্বয়ংক্রিয়ভাবে কনফার্ম হয়েছে</b></div></div>
-        <div class="tracking-step"><i class="fa-solid fa-phone-volume"></i><div><b>হটলাইন থেকে ২৪ ঘণ্টার মধ্যে ফোন করা হবে</b></div></div>
+        <div class="tracking-step" style="margin-top:8px;"><i class="fa-solid fa-robot"></i><div><b>এআই দ্বারা কনফার্ম হয়েছে</b></div></div>
+        <div class="tracking-step"><i class="fa-solid fa-phone-volume"></i><div><b>২৪ ঘণ্টার মধ্যে ফোন করা হবে</b></div></div>
         <div class="tracking-step"><i class="fa-solid fa-truck-fast"></i><div><span style="color:#f85606; font-weight:bold;">ডেলিভারি প্রসেস চলছে!</span></div></div>
-        <p style="font-size: 10px; color: #16a34a; margin-top: 10px; text-align: center; font-weight: bold;">
-            ℹ️ অর্ডার কনফার্ম হয়ে গেছে। কোনো পরিবর্তনের জন্য হটলাইনে যোগাযোগ করুন।
-        </p>
     `;
+}
+
+function openChatModal(element) {
+    setActiveNav(element);
+    closeModals();
+    const chat = document.getElementById('chatModal');
+    if(chat) chat.style.display = 'flex';
 }
 
 function sendChatMessage() {
@@ -563,9 +571,9 @@ function sendChatMessage() {
     const text = input.value.trim();
     if(!text) return;
     chatBody.innerHTML += `<div style="text-align:right; background:#2563eb; color:white; padding:5px; border-radius:4px; margin-bottom:5px;">${text}</div>`;
-    input.value = '';
+    input.value = ``;
     setTimeout(() => {
-        chatBody.innerHTML += `<div style="background:#e2e8f0; padding:5px; border-radius:4px; margin-bottom:5px;">🤖 এআই উত্তর: আপনার অর্ডারটি এআই প্যানেলে সংরক্ষিত আছে। ২৪ ঘণ্টার মধ্যে হটলাইন থেকে কল দেওয়া হবে।</div>`;
+        chatBody.innerHTML += `<div style="background:#e2e8f0; padding:5px; border-radius:4px; margin-bottom:5px;">🤖 এআই উত্তর: ২৪ ঘণ্টার মধ্যে হটলাইন থেকে কল দেওয়া হবে।</div>`;
         chatBody.scrollTop = chatBody.scrollHeight;
     }, 600);
 }
