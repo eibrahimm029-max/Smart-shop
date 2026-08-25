@@ -1,8 +1,4 @@
-let products = JSON.parse(localStorage.getItem('smartProducts')) || [
-    { id: 1, name: "ESP32 Wi-Fi & Bluetooth Module", price: "৫৫০ টাকা", icon: "🎛️", status: "available", desc: "High performance IoT module." },
-    { id: 2, name: "DHT11 Temperature Sensor", price: "১৮০ টাকা", icon: "🌡️", status: "available", desc: "Digital temperature sensor." }
-];
-
+let products = JSON.parse(localStorage.getItem('smartProducts')) || [];
 let notifications = JSON.parse(localStorage.getItem('siteNotifications')) || [
     "🤖 এআই সিস্টেম সক্রিয়: যেকোনো পণ্যে ইনস্ট্যান্ট এআই কনফার্মেশন সুবিধা।"
 ];
@@ -15,7 +11,7 @@ function displayProducts(items) {
     const container = document.getElementById('productContainer');
     if(!container) return;
     if(items.length === 0) {
-        container.innerHTML = `<div class="no-result">কোনো পণ্য পাওয়া যায়নি।</div>`;
+        container.innerHTML = `<div class="no-result">কোনো পণ্য পাওয়া যায়নি। নতুন পণ্য যোগ করুন।</div>`;
         return;
     }
     
@@ -28,13 +24,30 @@ function displayProducts(items) {
             </div>
         ` : '';
 
+        // ডিসকাউন্ট বা অফার পার্সেন্টেজ হিসাব
+        let discountBadge = '';
+        let oldPriceHtml = '';
+        if(p.oldPrice && Number(p.oldPrice) > Number(p.price)) {
+            let diff = Number(p.oldPrice) - Number(p.price);
+            let percent = Math.round((diff / Number(p.oldPrice)) * 100);
+            discountBadge = `<span class="discount-badge">-${percent}%</span>`;
+            oldPriceHtml = `<span class="old-price">৳ ${p.oldPrice}</span>`;
+        }
+
+        // ইমেজ অথবা ইমোজি রেন্ডারিং
+        let imageHtml = p.imageSrc ? `<img src="${p.imageSrc}" alt="${p.name}">` : `<span>📦</span>`;
+
         return `
             <div class="product-card">
+                ${discountBadge}
                 <span class="stock-badge ${isStockOut ? '' : 'active'}">${isStockOut ? 'স্টক আউট' : 'ইন স্টক'}</span>
-                <div class="product-img">${p.icon}</div>
+                <div class="product-img">${imageHtml}</div>
                 <div class="product-info">
                     <h3>${p.name}</h3>
-                    <p class="price">৳ ${p.price}</p>
+                    <div class="price-box">
+                        <span class="price">৳ ${p.price}</span>
+                        ${oldPriceHtml}
+                    </div>
                     ${ownerControls}
                     <button class="btn" ${isStockOut ? 'disabled' : ''} onclick="startQuickOrder(${p.id})">
                         ${isStockOut ? 'পণ্যটি নেই' : 'অর্ডার করুন'}
@@ -112,8 +125,9 @@ function requestAdminAccess() {
         document.getElementById('editProductId').value = '';
         document.getElementById('admName').value = '';
         document.getElementById('admPrice').value = '';
+        document.getElementById('admOldPrice').value = '';
         document.getElementById('admDesc').value = '';
-        document.getElementById('admIcon').value = '';
+        document.getElementById('admImageFile').value = '';
         document.getElementById('adminModalTitle').innerText = "নতুন পণ্য যোগ করুন (মালিক)";
         document.getElementById('saveProductBtn').innerText = "নতুন পণ্য যুক্ত করুন";
 
@@ -131,8 +145,8 @@ function openEditProduct(id) {
     document.getElementById('editProductId').value = p.id;
     document.getElementById('admName').value = p.name;
     document.getElementById('admPrice').value = p.price;
+    document.getElementById('admOldPrice').value = p.oldPrice || '';
     document.getElementById('admDesc').value = p.desc || '';
-    document.getElementById('admIcon').value = p.icon || '📦';
     document.getElementById('admStockStatus').value = p.status || 'available';
     document.getElementById('adminModalTitle').innerText = "পণ্যের দাম বা বিবরণ পরিবর্তন করুন";
     document.getElementById('saveProductBtn').innerText = "পরিবর্তন সেভ করুন";
@@ -150,42 +164,60 @@ function deleteProduct(id) {
     }
 }
 
+// ছবি ফাইল রিডার সহ পণ্য সেভ বা আপডেট ফাংশন
 function saveAdminProduct() {
     const editId = document.getElementById('editProductId').value;
     const name = document.getElementById('admName').value.trim();
     const price = document.getElementById('admPrice').value.trim();
-    let icon = document.getElementById('admIcon').value.trim() || "📦";
+    const oldPrice = document.getElementById('admOldPrice').value.trim();
     const status = document.getElementById('admStockStatus').value;
     const desc = document.getElementById('admDesc').value.trim();
     
-    const imageInput = document.getElementById('admImages');
+    const imageInput = document.getElementById('admImageFile');
+
+    if(!name || !price) { alert("পণ্যের নাম ও বর্তমান মূল্য দিতে হবে।"); return; }
+
     if(imageInput && imageInput.files && imageInput.files[0]) {
-        icon = "📷";
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            let imageSrc = e.target.result;
+            processProductSave(editId, name, price, oldPrice, status, desc, imageSrc);
+        };
+        reader.readAsDataURL(imageInput.files[0]);
+    } else {
+        let existingImg = "";
+        if(editId) {
+            let existingProd = products.find(item => item.id == editId);
+            if(existingProd) existingImg = existingProd.imageSrc || "";
+        }
+        processProductSave(editId, name, price, oldPrice, status, desc, existingImg);
     }
+}
 
-    if(!name || !price) { alert("পণ্যের নাম ও মূল্য দিতে হবে।"); return; }
-
+function processProductSave(editId, name, price, oldPrice, status, desc, imageSrc) {
     if(editId) {
         let p = products.find(item => item.id == editId);
         if(p) {
             p.name = name;
             p.price = price;
-            p.icon = icon;
+            p.oldPrice = oldPrice;
             p.status = status;
             p.desc = desc;
+            if(imageSrc) p.imageSrc = imageSrc;
         }
-        alert("পণ্য আপডেট করা হয়েছে!");
+        alert("পণ্য সফলভাবে আপডেট করা হয়েছে!");
     } else {
         const newProd = {
             id: Date.now(),
             name,
             price,
-            icon,
+            oldPrice,
             status,
-            desc
+            desc,
+            imageSrc
         };
         products.push(newProd);
-        alert("নতুন পণ্য যুক্ত হয়েছে!");
+        alert("নতুন পণ্য সফলভাবে যুক্ত হয়েছে!");
     }
 
     localStorage.setItem('smartProducts', JSON.stringify(products));
@@ -302,14 +334,13 @@ function startQuickOrder(productId) {
     selectedProductForOrder = products.find(p => p.id === productId);
     document.getElementById('checkoutDetails').innerHTML = `
         <b>পণ্য:</b> ${selectedProductForOrder.name}<br>
-        <b>মূল্য:</b> ${selectedProductForOrder.price}<br>
+        <b>মূল্য:</b> ৳ ${selectedProductForOrder.price}<br>
         <b>গ্রাহক:</b> ${localStorage.getItem('profileName')} (${localStorage.getItem('profilePhone')})<br>
         <b>ঠিকানা:</b> ${localStorage.getItem('profileAddress')}, ${localStorage.getItem('profileCity')}
     `;
     document.getElementById('checkoutModal').style.display = 'flex';
 }
 
-// এআই অটো-কনফার্মেশন ও নোটিফিকেশন জেনারেটর
 function confirmFinalOrder() {
     const orderId = 'AI-ORD-' + Math.floor(100000 + Math.random() * 900000);
     const userEmail = localStorage.getItem('smartTechEmail');
@@ -320,7 +351,7 @@ function confirmFinalOrder() {
     const orderData = {
         id: orderId,
         product: selectedProductForOrder.name,
-        price: selectedProductForOrder.price,
+        price: '৳ ' + selectedProductForOrder.price,
         customerName: userName,
         customerPhone: userPhone,
         customerAddress: userAddress,
@@ -329,16 +360,13 @@ function confirmFinalOrder() {
         date: new Date().toLocaleString()
     };
     
-    // কাস্টমারের ট্র্যাকিংয়ের জন্য সেভ
     localStorage.setItem('lastOrder', JSON.stringify(orderData));
 
-    // মালিকের অর্ডার প্যানেলে যুক্ত করা
     allCustomerOrders.unshift(orderData);
     localStorage.setItem('allCustomerOrders', JSON.stringify(allCustomerOrders));
     updateOwnerOrderBadge();
 
-    // নিজস্ব এআই সিস্টেম দ্বারা বাংলায় নোটিফিকেশন তৈরি ও পাঠানো
-    let aiNotificationText = `প্রিয় ${userName}, আপনার অর্ডারটি (${orderId}) আমাদের এআই সিস্টেম দ্বারা সফলভাবে কনফার্ম করা হয়েছে! পণ্যের নাম: ${selectedProductForOrder.name}, দাম: ${selectedProductForOrder.price}, ঠিকানা: ${userAddress}. হটলাইন থেকে ২৪ ঘণ্টার মধ্যে আপনাকে ফোন দিয়ে ফাইনাল ভেরিফিকেশন করা হবে।`;
+    let aiNotificationText = `প্রিয় ${userName}, আপনার অর্ডারটি (${orderId}) এআই সিস্টেম দ্বারা কনফার্ম হয়েছে! পণ্যের নাম: ${selectedProductForOrder.name}, দাম: ৳ ${selectedProductForOrder.price}, ঠিকানা: ${userAddress}. ২৪ ঘণ্টার মধ্যে হটলাইন থেকে কল দেওয়া হবে।`;
     
     notifications.unshift(aiNotificationText);
     localStorage.setItem('siteNotifications', JSON.stringify(notifications));
@@ -432,7 +460,7 @@ function renderTrackingInfo() {
         <p><b>পণ্য:</b> ${order.product} (${order.price})</p>
         <p><b>সময়:</b> ${order.date}</p>
         <div class="tracking-step" style="margin-top:8px;"><i class="fa-solid fa-robot"></i><div><b>এআই দ্বারা স্বয়ংক্রিয়ভাবে কনফার্ম হয়েছে</b></div></div>
-        <div class="tracking-step"><i class="fa-solid fa-phone-volume"></i><div><b>হটлайন থেকে ২৪ ঘণ্টার মধ্যে ফোন করা হবে</b></div></div>
+        <div class="tracking-step"><i class="fa-solid fa-phone-volume"></i><div><b>হটলাইন থেকে ২৪ ঘণ্টার মধ্যে ফোন করা হবে</b></div></div>
         <div class="tracking-step"><i class="fa-solid fa-truck-fast"></i><div><span style="color:#f85606; font-weight:bold;">ডেলিভারি প্রসেস চলছে!</span></div></div>
         
         <hr style="margin: 10px 0; border:0; border-top:1px solid #e2e8f0;">
