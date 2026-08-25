@@ -31,6 +31,19 @@
         </div>
     </header>
 
+    <!-- মালিকের জন্য সিক্রেট অ্যাডমিন বার (আপনার নির্দিষ্ট জিমেইল লগইন থাকলেই কেবল এটি স্ক্রিনে ভেসে উঠবে) -->
+    <div id="ownerQuickBar" style="display:none; background:#0f172a; padding:8px 15px; justify-content:space-between; align-items:center; color:white; font-size:11px; border-bottom:2px solid #f85606;">
+        <span>🔐 ওনার মোড অ্যাক্টিভ (মাস্টার কন্ট্রোল প্যানেল)</span>
+        <div style="display:flex; gap:8px;">
+            <button onclick="openOwnerMasterModal('add')" style="background:#2563eb; color:white; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:10px;">
+                <i class="fa-solid fa-plus-circle"></i> পণ্য যোগ করুন
+            </button>
+            <button onclick="openOwnerMasterModal('orders')" style="background:#f59e0b; color:white; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:10px;">
+                <i class="fa-solid fa-clipboard-list"></i> অর্ডার লিস্ট (<span id="ownerOrderCount">0</span>)
+            </button>
+        </div>
+    </div>
+
     <!-- মূল পণ্যের কন্টেইনার -->
     <main class="container">
         <h2 class="section-title">জনপ্রিয় এআই গ্যাজেটসমূহ</h2>
@@ -44,7 +57,6 @@
         <div class="nav-item active" onclick="switchTab('home', this)"><i class="fa-solid fa-house"></i><span>হোম</span></div>
         <div class="nav-item" onclick="openTrackingModal(this)"><i class="fa-solid fa-box-archive"></i><span>ট্র্যাকিং</span></div>
         <div class="nav-item" onclick="openChatModal(this)"><i class="fa-solid fa-robot"></i><span>এআই চ্যাট</span></div>
-        <div class="nav-item" onclick="openOwnerOrdersModal()"><i class="fa-solid fa-clipboard-list"></i><span>অর্ডার লিস্ট (<span id="ownerOrderCount">0</span>)</span></div>
         <div class="nav-item" onclick="openAccountModal(this)"><i class="fa-solid fa-user"></i><span>একাউন্ট</span></div>
     </nav>
 
@@ -64,13 +76,12 @@
             
             <div id="accountStep1">
                 <p style="font-size:11px; color:#64748b; margin-bottom:8px;">অর্ডার করতে আপনার জিমেইল দিয়ে ভেরিফাই করুন:</p>
-                <input type="email" id="userEmail" placeholder="আপনার জিমেইল লিখুন (例如: user@gmail.com)" class="form-input">
+                <input type="email" id="userEmail" placeholder="আপনার জিমেইল লিখুন" class="form-input">
                 <button class="form-btn" onclick="sendOtp()">ওটিপি (OTP) কোড পাঠান</button>
-                <button class="form-btn" style="background:#475569; margin-top:6px;" onclick="requestAdminAccess()">🔑 মালিক হিসেবে লগইন করুন</button>
             </div>
 
             <div id="accountStep2" style="display:none;">
-                <p style="font-size:11px; color:#64748b; margin-bottom:8px;">এআই কোড পাঠানো হয়েছে। কোডটি দিন:</p>
+                <p style="font-size:11px; color:#64748b; margin-bottom:8px;" id="otpInstructionText">এআই কোড পাঠানো হয়েছে। কোডটি দিন:</p>
                 <input type="text" id="otpCode" placeholder="৪ ডিজিটের ওটিপি কোড" class="form-input">
                 <button class="form-btn" onclick="verifyOtp()">কোড ভেরিফাই করুন</button>
             </div>
@@ -130,49 +141,59 @@
         </div>
     </div>
 
-    <!-- মডাল: মালিকের প্রোডাক্ট অ্যাড/এডিট প্যানেল -->
-    <div class="modal-screen" id="adminModal">
-        <div class="modal-content" style="max-height:85vh; overflow-y:auto;">
+    <!-- মডাল: মালিকের মাস্টার প্যানেল (পণ্য যোগ, এডিট ও অর্ডার লিস্ট) -->
+    <div class="modal-screen" id="ownerMasterModal">
+        <div class="modal-content" style="max-height:88vh; overflow-y:auto;">
             <span class="close-modal" onclick="closeModals()">&times;</span>
-            <h3 id="adminModalTitle">নতুন পণ্য যোগ করুন (মালিক)</h3>
-            <input type="hidden" id="editProductId">
-            
-            <label style="font-size:10px; font-weight:bold;">পণ্যের নাম</label>
-            <input type="text" id="admName" class="form-input" placeholder="পণ্যের নাম">
+            <div style="background:#0f172a; color:white; padding:8px; border-radius:6px; margin-bottom:12px; text-align:center;">
+                <h3 style="font-size:13px; margin:0; color:#f85606;"><i class="fa-solid fa-user-shield"></i> ওনার মাস্টার কন্ট্রোল প্যানেল</h3>
+            </div>
 
-            <label style="font-size:10px; font-weight:bold;">বর্তমান মূল্য (টাকা)</label>
-            <input type="number" id="admPrice" class="form-input" placeholder="যেমন: ১২০০">
+            <!-- ট্যাব বা সুইচ অপশন -->
+            <div style="display:flex; gap:5px; margin-bottom:12px;">
+                <button onclick="switchAdminTab('add')" id="tabBtnAdd" style="flex:1; background:#2563eb; color:white; border:none; padding:6px; font-size:10px; border-radius:4px; font-weight:bold; cursor:pointer;">নতুন পণ্য যোগ</button>
+                <button onclick="switchAdminTab('orders')" id="tabBtnOrders" style="flex:1; background:#cbd5e1; color:#1e293b; border:none; padding:6px; font-size:10px; border-radius:4px; font-weight:bold; cursor:pointer;">অর্ডার লিস্ট</button>
+            </div>
 
-            <label style="font-size:10px; font-weight:bold;">পূর্বের মূল্য / কাটা দাম (ঐচ্ছিক)</label>
-            <input type="number" id="admOldPrice" class="form-input" placeholder="যেমন: ১৫০০">
+            <!-- সেকশন ১: পণ্য যোগ/এডিট ফর্ম -->
+            <div id="adminAddProductSection">
+                <h4 id="adminModalTitle" style="font-size:11px; color:#1e293b; margin-bottom:6px;">নতুন পণ্য যুক্ত করুন</h4>
+                <input type="hidden" id="editProductId">
+                
+                <label style="font-size:10px; font-weight:bold;">পণ্যের নাম</label>
+                <input type="text" id="admName" class="form-input" placeholder="পণ্যের নাম">
 
-            <label style="font-size:10px; font-weight:bold;">স্ট্যাটাস</label>
-            <select id="admStockStatus" class="form-input">
-                <option value="available">ইন স্টক (Available)</option>
-                <option value="stockout">স্টক আউট (Stock Out)</option>
-            </select>
+                <label style="font-size:10px; font-weight:bold;">বর্তমান মূল্য (টাকা)</label>
+                <input type="number" id="admPrice" class="form-input" placeholder="যেমন: ১২০০">
 
-            <label style="font-size:10px; font-weight:bold;">পণ্যের ছবি (লোকাল ফাইল)</label>
-            <input type="file" id="admImageFile" class="form-input" accept="image/*">
+                <label style="font-size:10px; font-weight:bold;">পূর্বের মূল্য / কাটা দাম (ঐচ্ছিক)</label>
+                <input type="number" id="admOldPrice" class="form-input" placeholder="যেমন: ১৫০০">
 
-            <label style="font-size:10px; font-weight:bold;">পণ্যের বিস্তারিত বিবরণ</label>
-            <textarea id="admDesc" class="form-input" placeholder="পণ্যের গুণাগুণ ও বিবরণ লিখুন..." style="height:50px; resize:none;"></textarea>
+                <label style="font-size:10px; font-weight:bold;">স্ট্যাটাস</label>
+                <select id="admStockStatus" class="form-input">
+                    <option value="available">ইন স্টক (Available)</option>
+                    <option value="stockout">স্টক আউট (Stock Out)</option>
+                </select>
 
-            <button class="form-btn" id="saveProductBtn" onclick="saveAdminProduct()">নতুন পণ্য যুক্ত করুন</button>
+                <label style="font-size:10px; font-weight:bold;">পণ্যের ছবি (লোকাল ফাইল)</label>
+                <input type="file" id="admImageFile" class="form-input" accept="image/*">
 
-            <hr style="border:0; border-top:1px solid #e2e8f0; margin:15px 0;">
-            <h4 style="font-size:12px; color:#1e293b; margin-bottom:6px;">সবার জন্য নোটিফিকেশন ব্রডকাস্ট</h4>
-            <input type="text" id="admAnnounce" class="form-input" placeholder="নোটিফিকেশন মেসেজ...">
-            <button class="form-btn" style="background:#f59e0b; margin-top:5px;" onclick="sendAdminBroadcast()">নোটিফিকেশন পাঠান</button>
-        </div>
-    </div>
+                <label style="font-size:10px; font-weight:bold;">পণ্যের বিস্তারিত বিবরণ</label>
+                <textarea id="admDesc" class="form-input" placeholder="পণ্যের গুণাগুণ ও বিবরণ লিখুন..." style="height:50px; resize:none;"></textarea>
 
-    <!-- মডাল: মালিকের কাস্টমার অর্ডার লিস্ট -->
-    <div class="modal-screen" id="ownerOrdersModal">
-        <div class="modal-content" style="max-height:85vh; overflow-y:auto;">
-            <span class="close-modal" onclick="closeModals()">&times;</span>
-            <h3>সকল কাস্টমার অর্ডার লিস্ট (মালিক)</h3>
-            <div id="ownerOrdersContainer" style="margin-top:10px;"></div>
+                <button class="form-btn" id="saveProductBtn" onclick="saveAdminProduct()">নতুন পণ্য যুক্ত করুন</button>
+
+                <hr style="border:0; border-top:1px solid #e2e8f0; margin:12px 0;">
+                <h4 style="font-size:11px; color:#1e293b; margin-bottom:4px;">সবার জন্য নোটিফিকেশন ব্রডকাস্ট</h4>
+                <input type="text" id="admAnnounce" class="form-input" placeholder="নোটিফিকেশন মেসেজ...">
+                <button class="form-btn" style="background:#f59e0b; margin-top:4px;" onclick="sendAdminBroadcast()">নোটিফিকেশন পাঠান</button>
+            </div>
+
+            <!-- সেকশন ২: কাস্টমার অর্ডার লিস্ট -->
+            <div id="adminOrdersSection" style="display:none;">
+                <h4 style="font-size:11px; color:#1e293b; margin-bottom:6px;">সকল কাস্টমার অর্ডার লিস্ট</h4>
+                <div id="ownerOrdersContainer"></div>
+            </div>
         </div>
     </div>
 
