@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Tech BD - Daraz Style Store</title>
+    <title>Smart Tech BD - AI Powered E-Commerce</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -11,55 +11,76 @@
 <body>
 
     <!-- Top Notification Bar -->
-    <div class="top-promo-bar" id="promoBar">
-        🔥 মেগা অফার! যেকোনো অর্ডারে ২৪ ঘণ্টার মধ্যে কল করে কনফার্ম করা হবে। হটলাইন: +8809658777230
+    <div class="top-promo-bar">
+        🤖 স্মার্ট এআই চালিত সিস্টেম! ২৪ ঘণ্টার মধ্যে হটলাইন থেকে কল করে ফাইনাল কনফার্ম করা হবে। হটলাইন: +8809658777230
     </div>
 
     <!-- Top Header -->
     <div class="top-header">
         <div class="logo-text"><i class="fa-solid fa-store"></i> Smart Tech BD</div>
+        
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="পণ্য খুঁজুন..." oninput="searchProducts()">
             <button onclick="searchProducts()"><i class="fa-solid fa-search"></i></button>
         </div>
-        <div class="header-profile-icon" onclick="openAccountModal(this)">
-            <i class="fa-solid fa-user-circle"></i>
+
+        <div class="header-right-icons">
+            <!-- Notification Bell Icon -->
+            <div class="bell-icon-wrapper" onclick="toggleNotificationDropdown()">
+                <i class="fa-solid fa-bell"></i>
+                <span class="bell-badge" id="notifBadge">1</span>
+                <!-- Notification Dropdown Menu -->
+                <div class="notification-dropdown" id="notifDropdown">
+                    <div class="notif-header">এআই ও অফার নোটিফিকেশন</div>
+                    <div class="notif-list" id="notifListContainer">
+                        <div class="notif-item">🤖 এআই সিস্টেম প্রস্তুত রয়েছে। অর্ডার করলেই ইনস্ট্যান্ট নোটিফিকেশন পাবেন।</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Profile Icon -->
+            <div class="header-profile-icon" onclick="openAccountModal(this)">
+                <i class="fa-solid fa-user-circle"></i>
+            </div>
         </div>
     </div>
 
     <!-- Main Container -->
     <div class="container">
-        <!-- Banner / Video Intro Section -->
+        <!-- Banner & Media Section -->
         <div class="banner-video-section">
             <div class="banner-text">
-                <h2>স্মার্ট গ্যাজেট কার্নিভাল ২০২৬</h2>
-                <p>ক্যাশ অন ডেলিভারিতে সেরা কোয়ালিটির পণ্য কিনুন নিশ্চিন্তে।</p>
+                <h2>এআই স্মার্ট গ্যাজেট কার্নিভাল</h2>
+                <p>আমাদের নিজস্ব এআই সিস্টেম দ্বারা অর্ডার নিশ্চিতকরণ সেবা।</p>
             </div>
-            <!-- Video/Media Container -->
-            <div class="promo-video-box" id="promoVideoContainer">
-                <video autoplay muted loop playsinline width="100%" style="border-radius: 8px; max-height: 180px; object-fit: cover;">
+            <div class="promo-video-box">
+                <video autoplay muted loop playsinline width="100%" style="border-radius: 8px; max-height: 150px; object-fit: cover;">
                     <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-                    আপনার ব্রাউজার ভিডিও সাপোর্ট করে না।
                 </video>
             </div>
         </div>
 
-        <!-- Notification Announcement Box -->
-        <div class="announcement-card" id="announcementCard">
-            <h3><i class="fa-solid fa-bell"></i> লেটেস্ট আপডেট ও নোটিফিকেশন</h3>
-            <p id="announcementText">এডমিন থেকে পাঠানো বিশেষ নোটিফিকেশন এখানে শো করবে। ২৪ ঘণ্টার মধ্যে কল করে অর্ডার কনফার্ম করা হবে।</p>
+        <!-- Products Section Header with Owner Buttons -->
+        <div class="section-flex-header">
+            <h3 class="section-title">সকল ট্রেন্ডিং পণ্য</h3>
+            <div style="display: flex; gap: 5px;">
+                <button class="owner-add-btn" onclick="requestAdminAccess()">
+                    <i class="fa-solid fa-plus-circle"></i> পণ্য যোগ
+                </button>
+                <button class="owner-add-btn" style="background:#3b82f6;" onclick="openOwnerOrdersModal()">
+                    <i class="fa-solid fa-clipboard-list"></i> অর্ডার তালিকা (<span id="ownerOrderCount">0</span>)
+                </button>
+            </div>
         </div>
 
         <!-- Products Grid -->
-        <h3 class="section-title">সকল ট্রেন্ডিং পণ্য</h3>
         <div class="products-grid" id="productContainer"></div>
 
         <!-- Contact Support -->
         <div class="contact-box">
-            <h3>গ্রাহক সহায়তা ও যোগাযোগ</h3>
+            <h3>গ্রাহক সহায়তা ও হটলাইন</h3>
             <p><i class="fa-solid fa-phone"></i> ফোন / WhatsApp: +8809658777230</p>
             <p><i class="fa-solid fa-envelope"></i> ইমেইল: eibrahimm028q@gmail.com</p>
-            <p><i class="fa-solid fa-location-dot"></i> ঠিকানা: সয়াইটপুর বাজার, ফুলবাড়িয়া, ময়মনসিংহ, বাংলাদেশ</p>
+            <p><i class="fa-solid fa-location-dot"></i> ঠিকানা: সয়াইটপুর বাজার, ফুলবাড়িয়া, ময়মনসিংহ</p>
         </div>
     </div>
 
@@ -69,10 +90,10 @@
             <i class="fa-solid fa-house"></i> হোম
         </button>
         <button class="nav-item" onclick="openTrackingModal(this)">
-            <i class="fa-solid fa-truck-fast"></i> ট্র্যাক অর্ডার
+            <i class="fa-solid fa-truck-fast"></i> এআই ট্র্যাক
         </button>
         <button class="nav-item" onclick="openChatModal(this)">
-            <i class="fa-solid fa-comments"></i> লাইভ চ্যাট
+            <i class="fa-solid fa-comments"></i> এআই চ্যাট
         </button>
         <button class="nav-item" onclick="openAccountModal(this)">
             <i class="fa-solid fa-user"></i> অ্যাকাউন্ট
@@ -91,11 +112,11 @@
                     <label>আপনার জিমেইল এড্রেস লিখুন</label>
                     <input type="email" id="userEmail" placeholder="yourname@gmail.com">
                 </div>
-                <button class="form-btn" onclick="sendOtp()">ভেরিফিকেশন কোড পাঠান</button>
+                <button class="form-btn" onclick="sendOtp()">এআই ভেরিফিকেশন কোড পাঠান</button>
             </div>
             <div id="accountStep2" style="display:none;">
                 <div class="form-group">
-                    <label>৪-ডিজিটের ওটিপি কোড দিন (নোটিফিকেশন থেকে কপি করুন)</label>
+                    <label>৪-ডিজিটের এআই ওটিপি কোড দিন</label>
                     <input type="text" id="otpCode" placeholder="৪-ডিজিট কোড">
                 </div>
                 <button class="form-btn" onclick="verifyOtp()">কোড ভেরিফাই করুন</button>
@@ -106,29 +127,9 @@
                 <div class="form-group"><label>সিটি / জেলা</label><input type="text" id="profileCity" placeholder="যেমন: ময়মনসিংহ"></div>
                 <div class="form-group"><label>পূর্ণ ঠিকানা ও জিপ কোড</label><textarea id="profileAddress" placeholder="বাসা/রোড, থানা, জিপ কোড"></textarea></div>
                 <button class="form-btn" onclick="saveProfile()">প্রোফাইল সেভ করুন</button>
-                
-                <hr style="margin: 12px 0; border:0; border-top:1px solid #e2e8f0;">
-                <button class="form-btn" style="background:#22c55e;" onclick="openCustomerSellModal()">পণ্য বিক্রি করতে চান? (ভেন্ডর)</button>
-                <button class="form-btn" style="background:#1e293b; margin-top:8px;" onclick="requestAdminAccess()">🔒 এডমিন প্যানেল এক্সেস</button>
-
                 <p class="info-text" id="loggedInEmail" style="margin-top:8px; color:#22c55e; font-weight:bold;"></p>
                 <button class="form-btn" style="background: #ef4444; margin-top:10px;" onclick="logout()">লগআউট</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Customer Sell Modal -->
-    <div class="modal-screen" id="customerSellModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span>আপনার পণ্য জমা দিন</span>
-                <span onclick="closeModals()">&times;</span>
-            </div>
-            <div class="form-group"><label>পণ্যের নাম</label><input type="text" id="custProdName" placeholder="পণ্যের নাম"></div>
-            <div class="form-group"><label>মূল্য (টাকা)</label><input type="text" id="custProdPrice" placeholder="যেমন: ১২০০ টাকা"></div>
-            <div class="form-group"><label>ছবির গ্যালারি বা লিংক</label><input type="text" id="custProdImage" placeholder="ছবির লিংক বা ইমোজি"></div>
-            <div class="form-group"><label>বিস্তারিত বিবরণ</label><textarea id="custProdDesc" placeholder="পণ্যের বিবরণ..."></textarea></div>
-            <button class="form-btn" onclick="submitCustomerProduct()">রিভিউয়ের জন্য জমা দিন</button>
         </div>
     </div>
 
@@ -136,14 +137,14 @@
     <div class="modal-screen" id="checkoutModal">
         <div class="modal-content">
             <div class="modal-header">
-                <span>অর্ডার কনফার্মেশন (ক্যাশ অন ডেলিভারি)</span>
+                <span>🤖 এআই অটো-কনফার্মেশন অর্ডার</span>
                 <span onclick="closeModals()">&times;</span>
             </div>
             <div id="checkoutDetails" style="font-size:12px; margin-bottom:10px; background:#f8fafc; padding:8px; border-radius:4px;"></div>
             <p style="font-size: 11px; color: #15803d; margin-bottom: 10px; font-weight: bold;">
-                ℹ️ কোনো ট্রানজেকশন আইডি লাগবে না। অর্ডার সাবমিট করার পর ২৪ ঘণ্টার মধ্যে আমাদের টিম আপনাকে কল করে অর্ডার কনফার্ম করবে।
+                🤖 অর্ডার সাবমিট করার সাথে সাথেই আমাদের এআই সিস্টেম এটি স্বয়ংক্রিয়ভাবে কনফার্ম করে দেবে এবং আপনাকে নোটিফিকেশন পাঠিয়ে দেবে।
             </p>
-            <button class="form-btn" onclick="confirmFinalOrder()">অর্ডার কনফার্ম করুন</button>
+            <button class="form-btn" onclick="confirmFinalOrder()">অর্ডার কনফার্ম ও এআই প্রসেস চালু করুন</button>
         </div>
     </div>
 
@@ -151,35 +152,57 @@
     <div class="modal-screen" id="trackingModal">
         <div class="modal-content">
             <div class="modal-header">
-                <span>অর্ডার ট্র্যাকিং ও স্ট্যাটাস</span>
+                <span>এআই অর্ডার ট্র্যাকিং ও স্ট্যাটাস</span>
                 <span onclick="closeModals()">&times;</span>
             </div>
             <div id="trackingBody" style="font-size:12px;"></div>
         </div>
     </div>
 
-    <!-- Admin Panel Modal -->
+    <!-- Owner / Admin Panel Modal -->
     <div class="modal-screen" id="adminModal">
         <div class="modal-content">
             <div class="modal-header">
-                <span>এডমিন প্যানেল - পণ্য ও স্টক ম্যানেজমেন্ট</span>
+                <span id="adminModalTitle">মালিকের প্যানেল - পণ্য ও নোটিফিকেশন</span>
                 <span onclick="closeModals()">&times;</span>
             </div>
+            <input type="hidden" id="editProductId">
             <div class="form-group"><label>পণ্যের নাম</label><input type="text" id="admName" placeholder="যেমন: স্মার্ট ওয়াচ"></div>
-            <div class="form-group"><label>মূল্য (যেমন: ১,৫০০ টাকা)</label><input type="text" id="admPrice" placeholder="১৫০০ টাকা"></div>
-            <div class="form-group"><label>ছবি গ্যালারি লিংক / ইমোজি</label><input type="text" id="admIcon" placeholder="📷 বা ছবির লিংক"></div>
+            <div class="form-group"><label>মূল্য (টাকা)</label><input type="text" id="admPrice" placeholder="১৫০০ টাকা"></div>
+            
+            <!-- Gallery Multiple Image Selection -->
+            <div class="form-group">
+                <label>গ্যালারি থেকে একাধিক ছবি সিলেক্ট করুন</label>
+                <input type="file" id="admImages" multiple accept="image/*" style="font-size:11px;">
+                <input type="text" id="admIcon" placeholder="বা ইমোজি/প্রিভিউ (যেমন: ⌚)" style="margin-top:5px;">
+            </div>
+
             <div class="form-group"><label>স্টক স্ট্যাটাস</label>
                 <select id="admStockStatus" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px;">
                     <option value="available">ইন স্টক (উপলব্ধ)</option>
                     <option value="stockout">স্টক আউট (বন্ধ)</option>
                 </select>
             </div>
-            <div class="form-group"><label>বিবরণ</label><textarea id="admDesc" placeholder="পণ্যের বিবরণ..."></textarea></div>
-            <button class="form-btn" onclick="addNewProduct()">নতুন পণ্য যুক্ত করুন</button>
-            <hr style="margin:10px 0;">
-            <div class="form-group"><label>বিকাশ/নগদ বা হটলাইন আপডেট নম্বর</label><input type="text" id="admHotline" value="+8809658777230"></div>
-            <div class="form-group"><label>নতুন নোটিফিকেশন অ্যানাউন্সমেন্ট</label><input type="text" id="admAnnounce" placeholder="গ্রাহকদের জন্য বিশেষ নোটিশ..."></div>
-            <button class="form-btn" style="background:#15803d;" onclick="updateAdminSettings()">নোটিফিকেশন আপডেট করুন</button>
+            <div class="form-group"><label>বিবরণ</label><textarea id="admDesc" placeholder="পণ্যের বিস্তারিত বিবরণ..."></textarea></div>
+            <button class="form-btn" id="saveProductBtn" onclick="saveAdminProduct()">পণ্য সেভ বা আপডেট করুন</button>
+            
+            <hr style="margin:12px 0; border:0; border-top:1px solid #e2e8f0;">
+            <div class="form-group"><label>ব্রডকাস্ট নোটিফিকেশন (বেল আইকনে যাবে)</label><input type="text" id="admAnnounce" placeholder="গ্রাহকদের জন্য বিশেষ অফার..."></div>
+            <button class="form-btn" style="background:#15803d;" onclick="sendAdminBroadcast()">নোটিফিকেশন পাঠান</button>
+        </div>
+    </div>
+
+    <!-- Owner Orders Modal -->
+    <div class="modal-screen" id="ownerOrdersModal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <span>📦 মালিকের এআই অর্ডার ম্যানেজমেন্ট প্যানেল</span>
+                <span onclick="closeModals()">&times;</span>
+            </div>
+            <p style="font-size: 11px; color: #64748b; margin-bottom: 10px;">
+                এআই দ্বারা স্বয়ংক্রিয়ভাবে কনফার্ম হওয়া অর্ডারগুলো এখানে জমা রয়েছে। আপনি হটলাইন থেকে কল করতে পারবেন।
+            </p>
+            <div id="ownerOrdersContainer" style="max-height: 300px; overflow-y: auto;"></div>
         </div>
     </div>
 
@@ -187,15 +210,15 @@
     <div class="modal-screen" id="chatModal">
         <div class="modal-content" style="height: 380px; display: flex; flex-direction: column;">
             <div class="modal-header">
-                <span>লাইভ চ্যাট সাপোর্ট</span>
+                <span>এআই চ্যাট অ্যাসিস্ট্যান্ট</span>
                 <span onclick="closeModals()">&times;</span>
             </div>
             <div class="chat-body" id="chatBody" style="flex:1; overflow-y:auto; font-size:11px; background:#f8fafc; padding:8px; border-radius:4px; margin-bottom:8px;">
-                <div style="background:#e2e8f0; padding:6px; border-radius:6px; margin-bottom:6px;">স্বাগতম! Smart Tech BD লাইভ চ্যাটে আপনাকে কীভাবে সাহায্য করতে পারি?</div>
+                <div style="background:#e2e8f0; padding:6px; border-radius:6px; margin-bottom:6px;">হ্যালো! আমি আপনার স্টোরের নিজস্ব এআই অ্যাসিস্ট্যান্ট। অর্ডার বা পণ্য সম্পর্কে কিছু জানার থাকলে বলুন।</div>
             </div>
             <div style="display:flex;">
-                <input type="text" id="chatInput" placeholder="এখানে লিখুন..." style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; outline:none;" onkeypress="if(event.key==='Enter')sendChatMessage()">
-                <button onclick="sendChatMessage()" style="background:#f85606; color:white; border:none; padding:6px 10px; margin-left:4px; border-radius:4px; cursor:pointer;">পাঠান</button>
+                <input type="text" id="chatInput" placeholder="এআই কে কিছু জিগ্যেস করুন..." style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; outline:none;" onkeypress="if(event.key==='Enter')sendChatMessage()">
+                <button onclick="sendChatMessage()" style="background:#f85606; color:white; border:none; padding:6px 10px; margin-left:4px; border-radius:4px; cursor:pointer;">প্রেরণ</button>
             </div>
         </div>
     </div>
