@@ -1,7 +1,7 @@
 let products = JSON.parse(localStorage.getItem('smartProducts')) || [
-    { id: 1, name: "ESP32 Wi-Fi & Bluetooth Module", price: "550 BDT", icon: "🎛️", desc: "High performance IoT module." },
-    { id: 2, name: "DHT11 Temperature Sensor", price: "180 BDT", icon: "🌡️", desc: "Digital temperature and humidity sensor." },
-    { id: 3, name: "3D Printed Robot Chassis", price: "350 BDT", icon: "🤖", desc: "Sturdy 3D printed robotic frame." }
+    { id: 1, name: "ESP32 Wi-Fi & Bluetooth Module", price: "৫৫০ টাকা", icon: "🎛️", status: "available", desc: "High performance IoT module." },
+    { id: 2, name: "DHT11 Temperature Sensor", price: "১৮০ টাকা", icon: "🌡️", status: "available", desc: "Digital temperature sensor." },
+    { id: 3, name: "3D Printed Robot Chassis", price: "৩৫০ টাকা", icon: "🤖", status: "stockout", desc: "Sturdy robotic frame." }
 ];
 
 let selectedProductForOrder = null;
@@ -10,22 +10,36 @@ function displayProducts(items) {
     const container = document.getElementById('productContainer');
     if(!container) return;
     if(items.length === 0) {
-        container.innerHTML = `<div class="no-result">No products found.</div>`;
+        container.innerHTML = `<div class="no-result">কোনো পণ্য পাওয়া যায়নি।</div>`;
         return;
     }
-    container.innerHTML = items.map(p => `
-        <div class="product-card">
-            <div class="product-img">${p.icon}</div>
-            <div class="product-info">
-                <h3>${p.name}</h3>
-                <p class="price">৳ ${p.price}</p>
-                <button class="btn" onclick="startQuickOrder(${p.id})">Order Now</button>
+    container.innerHTML = items.map(p => {
+        let isStockOut = p.status === 'stockout';
+        return `
+            <div class="product-card">
+                <span class="stock-badge ${isStockOut ? '' : 'active'}">${isStockOut ? 'স্টক আউট' : 'ইন স্টক'}</span>
+                <div class="product-img">${p.icon}</div>
+                <div class="product-info">
+                    <h3>${p.name}</h3>
+                    <p class="price">৳ ${p.price}</p>
+                    <button class="btn" ${isStockOut ? 'disabled' : ''} onclick="startQuickOrder(${p.id})">
+                        ${isStockOut ? 'পণ্যটি নেই' : 'অর্ডার করুন'}
+                    </button>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 displayProducts(products);
+
+// Load Custom Announcement
+window.onload = function() {
+    const savedAnnounce = localStorage.getItem('siteAnnouncement');
+    if(savedAnnounce) {
+        document.getElementById('announcementText').innerText = savedAnnounce;
+    }
+}
 
 function searchProducts() {
     const searchInput = document.getElementById('searchInput');
@@ -60,13 +74,13 @@ function openAccountModal(element) {
 }
 
 function requestAdminAccess() {
-    let pass = prompt("Enter Admin Password:");
+    let pass = prompt("এডমিন পাসওয়ার্ড দিন:");
     if(pass === "1234") {
         closeModals();
         const adm = document.getElementById('adminModal');
         if(adm) adm.style.display = 'flex';
     } else if(pass !== null) {
-        alert("Incorrect Password!");
+        alert("ভুল পাসওয়ার্ড!");
     }
 }
 
@@ -94,8 +108,8 @@ function openCustomerSellModal() {
 function submitCustomerProduct() {
     const name = document.getElementById('custProdName').value.trim();
     const price = document.getElementById('custProdPrice').value.trim();
-    if(!name || !price) { alert("Please fill details."); return; }
-    alert("Your product has been submitted for admin review!");
+    if(!name || !price) { alert("দয়া করে সকল তথ্য পূরণ করুন।"); return; }
+    alert("আপনার পণ্যটি এডমিন রিভিউয়ের জন্য সফলভাবে জমা হয়েছে!");
     closeModals();
 }
 
@@ -104,10 +118,13 @@ function sendOtp() {
     const emailInput = document.getElementById('userEmail');
     if(!emailInput) return;
     const email = emailInput.value.trim();
-    if(!email.includes('@')) { alert("Enter valid email"); return; }
+    if(!email.includes('@')) { alert("সঠিক ইমেইল দিন"); return; }
+    
     generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
     savedEmail = email;
-    alert(`[Simulation OTP]: Code is ${generatedOtp}`);
+    
+    alert(`📱 [নোটিফিকেশন পপ-আপ]: আপনার Smart Tech এক্টিভেশন কোড হলো: ${generatedOtp}`);
+    
     document.getElementById('accountStep1').style.display = 'none';
     document.getElementById('accountStep2').style.display = 'block';
 }
@@ -117,8 +134,12 @@ function verifyOtp() {
     if(!otpInput) return;
     if(otpInput.value.trim() === generatedOtp) {
         localStorage.setItem('smartTechEmail', savedEmail);
+        let defaultName = savedEmail.split('@')[0];
+        if(!localStorage.getItem('profileName')) {
+            localStorage.setItem('profileName', defaultName);
+        }
         checkLoginState();
-    } else { alert("Invalid Code"); }
+    } else { alert("ভুল কোড দেওয়া হয়েছে!"); }
 }
 
 function checkLoginState() {
@@ -132,10 +153,11 @@ function checkLoginState() {
         step1.style.display = 'none';
         step2.style.display = 'none';
         step3.style.display = 'block';
-        document.getElementById('loggedInEmail').innerText = `Logged in: ${email}`;
+        document.getElementById('loggedInEmail').innerText = `লগইন আছে: ${email}`;
         document.getElementById('profileName').value = localStorage.getItem('profileName') || '';
         document.getElementById('profilePhone').value = localStorage.getItem('profilePhone') || '+8809658777230';
-        document.getElementById('profileAddress').value = localStorage.getItem('profileAddress') || 'Soyaitpur Bazar, Phulbaria, Mymensingh';
+        document.getElementById('profileCity').value = localStorage.getItem('profileCity') || 'ময়মনসিংহ';
+        document.getElementById('profileAddress').value = localStorage.getItem('profileAddress') || 'সয়াইটপুর বাজার, ফুলবাড়িয়া';
     } else {
         step1.style.display = 'block';
         step2.style.display = 'none';
@@ -146,8 +168,9 @@ function checkLoginState() {
 function saveProfile() {
     localStorage.setItem('profileName', document.getElementById('profileName').value);
     localStorage.setItem('profilePhone', document.getElementById('profilePhone').value);
+    localStorage.setItem('profileCity', document.getElementById('profileCity').value);
     localStorage.setItem('profileAddress', document.getElementById('profileAddress').value);
-    alert("Profile saved successfully!");
+    alert("প্রোফাইল সফলভাবে সেভ করা হয়েছে!");
     closeModals();
 }
 
@@ -159,34 +182,27 @@ function logout() {
 function startQuickOrder(productId) {
     const email = localStorage.getItem('smartTechEmail');
     if(!email) {
-        alert("Please login with your Gmail first!");
-        const acc = document.getElementById('accountModal');
-        if(acc) acc.style.display = 'flex';
-        checkLoginState();
+        alert("আগে আপনার জিমেইল দিয়ে অ্যাকাউন্ট লগইন করুন!");
+        openAccountModal();
         return;
     }
     const address = localStorage.getItem('profileAddress');
     if(!address) {
-        alert("Please save your address in Account first!");
-        const acc = document.getElementById('accountModal');
-        if(acc) acc.style.display = 'flex';
-        checkLoginState();
+        alert("অ্যাকাউন্টে আপনার ডেলিভারি ঠিকানা সেভ করা নেই!");
+        openAccountModal();
         return;
     }
     selectedProductForOrder = products.find(p => p.id === productId);
     document.getElementById('checkoutDetails').innerHTML = `
-        <b>Product:</b> ${selectedProductForOrder.name}<br>
-        <b>Price:</b> ${selectedProductForOrder.price}<br>
-        <b>Deliver To:</b> ${localStorage.getItem('profileName')} (${localStorage.getItem('profilePhone')})
+        <b>পণ্য:</b> ${selectedProductForOrder.name}<br>
+        <b>মূল্য:</b> ${selectedProductForOrder.price}<br>
+        <b>প্রাপক:</b> ${localStorage.getItem('profileName')} (${localStorage.getItem('profilePhone')})<br>
+        <b>ঠিকানা:</b> ${localStorage.getItem('profileAddress')}, ${localStorage.getItem('profileCity')}
     `;
     document.getElementById('checkoutModal').style.display = 'flex';
 }
 
 function confirmFinalOrder() {
-    const trx = document.getElementById('trxId').value.trim();
-    const sender = document.getElementById('senderNum').value.trim();
-    if(!trx || !sender) { alert("Please provide Transaction ID and Sender Number."); return; }
-    
     const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
     const userEmail = localStorage.getItem('smartTechEmail');
     
@@ -199,69 +215,69 @@ function confirmFinalOrder() {
     };
     
     localStorage.setItem('lastOrder', JSON.stringify(orderData));
-    alert("Order placed successfully!");
+    alert("অভিনন্দন! আপনার অর্ডার সফলভাবে সাবমিট হয়েছে। ২৪ ঘণ্টার মধ্যে আপনাকে কল করে কনফার্ম করা হবে।");
     closeModals();
     
     document.getElementById('trackingModal').style.display = 'flex';
     renderTrackingInfo();
-    triggerAIEmailSimulation(orderData);
 }
 
-function triggerAIEmailSimulation(order) {
-    const aiBox = document.getElementById('aiNotifyBox');
-    const statusText = document.getElementById('aiEmailStatusText');
-    if(!aiBox || !statusText) return;
-    aiBox.style.display = 'block';
-    statusText.innerHTML = `AI System is processing... (Analyzing order & securing seal stamp)`;
-
-    setTimeout(() => {
-        statusText.innerHTML = `
-            <b>✅ AI Verified & Dispatched!</b><br>
-            📧 Email sent to: <b>${order.email}</b><br>
-            🆔 Order ID: <b>${order.id}</b> | Price: <b>${order.price}</b><br>
-            🔒 <i>Official AI Stamp & Percentage Back-end Locked.</i>
-        `;
-    }, 1500);
+// ভুল অর্ডার বা এন্ট্রি ডিলিট করার ফাংশন
+function deleteCurrentOrder() {
+    if(confirm("আপনি কি নিশ্চিতভাবে এই ভুল অর্ডারটি ডিলিট বা বাতিল করতে চান?")) {
+        localStorage.removeItem('lastOrder');
+        alert("অর্ডারটি সফলভাবে মুছে ফেলা হয়েছে!");
+        renderTrackingInfo();
+    }
 }
 
 function renderTrackingInfo() {
     const order = JSON.parse(localStorage.getItem('lastOrder'));
     const box = document.getElementById('trackingBody');
-    const aiBox = document.getElementById('aiNotifyBox');
     if(!box) return;
 
     if(!order) { 
-        box.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">No active orders found.</p>`; 
-        if(aiBox) aiBox.style.display = 'none';
+        box.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">কোনো সক্রিয় অর্ডার পাওয়া যায়নি।</p>`; 
         return; 
     }
     box.innerHTML = `
-        <p><b>Order ID:</b> ${order.id || 'ORD-982143'}</p>
-        <p><b>Product:</b> ${order.product} (${order.price})</p>
-        <div class="tracking-step" style="margin-top:8px;"><i class="fa-solid fa-circle-check"></i><div><b>Order Confirmed</b></div></div>
-        <div class="tracking-step"><i class="fa-solid fa-box-archive"></i><div><b>Packed & Ready</b></div></div>
-        <div class="tracking-step"><i class="fa-solid fa-truck-fast"></i><div><span style="color:#f85606; font-weight:bold;">On the way!</span></div></div>
+        <p><b>অর্ডার আইডি:</b> ${order.id}</p>
+        <p><b>পণ্য:</b> ${order.product} (${order.price})</p>
+        <p><b>সময়:</b> ${order.date}</p>
+        <div class="tracking-step" style="margin-top:8px;"><i class="fa-solid fa-circle-check"></i><div><b>অর্ডার গ্রহণ করা হয়েছে</b></div></div>
+        <div class="tracking-step"><i class="fa-solid fa-phone-volume"></i><div><b>২৪ ঘণ্টার মধ্যে ফোন কল ও কনফার্মেশন</b></div></div>
+        <div class="tracking-step"><i class="fa-solid fa-box-archive"></i><div><b>প্যাকিং ও ডেলিভারি প্রসেস</b></div></div>
+        <div class="tracking-step"><i class="fa-solid fa-truck-fast"></i><div><span style="color:#f85606; font-weight:bold;">ডেলিভারির পথে রয়েছে!</span></div></div>
+        
+        <hr style="margin: 10px 0; border:0; border-top:1px solid #e2e8f0;">
+        <button onclick="deleteCurrentOrder()" style="width:100%; background:#ef4444; color:white; border:none; padding:8px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:11px;">
+            <i class="fa-solid fa-trash"></i> ভুল অর্ডার বা এন্ট্রি ডিলিট করুন
+        </button>
     `;
-    if(aiBox) {
-        aiBox.style.display = 'block';
-        document.getElementById('aiEmailStatusText').innerHTML = `
-            <b>✅ AI Auto-Email Sent Successfully!</b><br>
-            Recipient: <b>${order.email}</b> | ID: <b>${order.id}</b><br>
-            🔒 <i>System AI Verified & Sealed.</i>
-        `;
-    }
 }
 
 function addNewProduct() {
     const name = document.getElementById('admName').value.trim();
     const price = document.getElementById('admPrice').value.trim();
     const icon = document.getElementById('admIcon').value.trim() || "📦";
+    const status = document.getElementById('admStockStatus').value;
     const desc = document.getElementById('admDesc').value.trim();
-    if(!name || !price) { alert("Enter name and price."); return; }
-    products.push({ id: Date.now(), name, price, icon, desc });
+    
+    if(!name || !price) { alert("নাম ও মূল্য লিখুন।"); return; }
+    products.push({ id: Date.now(), name, price, icon, status, desc });
     localStorage.setItem('smartProducts', JSON.stringify(products));
     displayProducts(products);
-    alert("Product uploaded successfully!");
+    alert("নতুন পণ্য সফলভাবে যুক্ত হয়েছে!");
+    closeModals();
+}
+
+function updateAdminSettings() {
+    const newAnnounce = document.getElementById('admAnnounce').value.trim();
+    if(newAnnounce) {
+        localStorage.setItem('siteAnnouncement', newAnnounce);
+        document.getElementById('announcementText').innerText = newAnnounce;
+        alert("নোটিফিকেশন বার আপডেট করা হয়েছে!");
+    }
     closeModals();
 }
 
@@ -274,7 +290,7 @@ function sendChatMessage() {
     chatBody.innerHTML += `<div style="text-align:right; background:#f85606; color:white; padding:5px; border-radius:4px; margin-bottom:5px;">${text}</div>`;
     input.value = '';
     setTimeout(() => {
-        chatBody.innerHTML += `<div style="background:#e2e8f0; padding:5px; border-radius:4px; margin-bottom:5px;">Thanks for messaging! Call +8809658777230 for urgent help.</div>`;
+        chatBody.innerHTML += `<div style="background:#e2e8f0; padding:5px; border-radius:4px; margin-bottom:5px;">মেসেজের জন্য ধন্যবাদ! জরুরী প্রয়োজনে কল করুন: +8809658777230</div>`;
         chatBody.scrollTop = chatBody.scrollHeight;
     }, 500);
 }
