@@ -3,197 +3,341 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>এআই স্মার্ট গ্যাজেট কার্নিভাল ২০২৬</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>AeroDrop Dynamic Dual-Control Center</title>
+    <style>
+        :root {
+            --bg: #070a12;
+            --panel-bg: #101726;
+            --accent-cyan: #00f2fe;
+            --accent-green: #00ff88;
+            --accent-red: #ff3366;
+            --accent-orange: #ff9900;
+            --text-main: #f1f5f9;
+            --text-sub: #64748b;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', System-UI, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            background: rgba(16, 23, 38, 0.9);
+            border-bottom: 1px solid rgba(0, 242, 254, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn {
+            padding: 16px 28px;
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-cyan);
+            border-bottom: 3px solid var(--accent-cyan);
+            background: rgba(0, 242, 254, 0.05);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        .panel {
+            display: none;
+            background: var(--panel-bg);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mode Switch Button Banner */
+        .mode-banner {
+            background: #090e17;
+            border: 2px solid var(--accent-orange);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mode-status {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-orange);
+        }
+
+        .toggle-btn {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+            background: var(--accent-orange);
+            color: #000;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        @media(max-width: 768px) { 
+            .grid-3 { grid-template-columns: 1fr; } 
+            .mode-banner { flex-direction: column; gap: 15px; text-align: center; }
+        }
+
+        .radar-box {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: radial-gradient(circle, #1a263b 0%, #070a12 80%);
+            border-radius: 14px;
+            border: 2px solid var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .radar-sweep {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            background: conic-gradient(from 0deg, rgba(0,242,254,0.3), transparent 60deg);
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .drone-3d-icon {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            background: var(--accent-cyan);
+            clip-path: polygon(50% 0%, 0% 100%, 50% 80%, 100% 100%);
+            box-shadow: 0 0 20px var(--accent-cyan);
+            transition: all 0.5s ease;
+        }
+
+        .metric-card {
+            background: #090e17;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #1a2436;
+            margin-bottom: 12px;
+        }
+
+        .metric-val {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--accent-green);
+            margin-top: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        .btn-cyan { background: var(--accent-cyan); color: #000; }
+        .btn-red { background: var(--accent-red); color: #fff; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #090e17;
+            border: 1px solid #222f47;
+            color: #fff;
+            border-radius: 8px;
+            box-sizing: border-box;
+            margin-top: 6px;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- হেডার ও ব্যানার -->
-    <header class="header">
-        <div class="top-banner">এআই স্মার্ট গ্যাজেট কার্নিভাল ২০২৬ — সেরা অফার ও ডিসকাউন্টে প্রিমিয়াম গ্যাজেট কিনুন ক্যাশ অন ডেলিভারিতে।</div>
-        <div class="main-header">
-            <div class="logo">⚡ SmartTech AI</div>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="পণ্য খুঁজুন..." onkeyup="searchProducts()">
-                <button><i class="fa-solid fa-magnifying-glass"></i></button>
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('p1')">🕹️ ১. 3D রিয়েল-টাইম ফ্লাই ও মোড কন্ট্রোল</button>
+        <button class="tab-btn" onclick="switchTab('p2')">🤖 ২. অটোনোমাস মিশন কন্ট্রোল</button>
+        <button class="tab-btn" onclick="switchTab('p3')">🌐 ৩. সার্ভার ও কাস্টমার পোর্টাল</button>
+    </div>
+
+    <div class="container">
+
+        <!-- PANEL 1: ONE-CLICK MODE TOGGLE + RADAR -->
+        <div id="p1" class="panel active">
+            
+            <!-- Dynamic Mode Switcher Bar -->
+            <div class="mode-banner" id="modeBanner">
+                <div>
+                    <span style="color:var(--text-sub); font-size:13px;">বর্তমান ফ্লাইং স্টেট:</span>
+                    <div class="mode-status" id="modeText">🎮 MANUALLY CONTROLLED (JOYSTICK)</div>
+                </div>
+                <button class="toggle-btn" id="toggleBtn" onclick="toggleFlightMode()">এক চাপে অটোনোমাস অন করুন (Switch Auto)</button>
             </div>
-            <div class="header-icons">
-                <div class="notif-wrapper" onclick="toggleNotificationDropdown()">
-                    <i class="fa-solid fa-bell"></i>
-                    <span class="badge" id="notifBadge">0</span>
-                    <div class="notif-dropdown" id="notifDropdown">
-                        <div class="notif-header">এআই সিস্টেম নোটিফিকেশন</div>
-                        <div id="notifListContainer"></div>
+
+            <div class="grid-3">
+                <div class="radar-box">
+                    <div class="radar-sweep"></div>
+                    <div class="drone-3d-icon" id="droneIcon"></div>
+                    <span style="position: absolute; bottom: 10px; left: 15px; font-size: 12px; color: var(--text-sub);">Radio Link: Active (915MHz)</span>
+                </div>
+
+                <div>
+                    <div class="metric-card">
+                        <small style="color:var(--text-sub);">উচ্চতা (Altitude)</small>
+                        <div class="metric-val" id="altDisplay">20.0 FT</div>
+                    </div>
+                    <div class="metric-card">
+                        <small style="color:var(--text-sub);">উইঞ্চ সুতার অবস্থা</small>
+                        <div class="metric-val" style="color:var(--accent-cyan);" id="winchDisplay">LOCKED</div>
+                    </div>
+                    <div class="metric-card">
+                        <small style="color:var(--text-sub);">জিপিএস স্থানাঙ্ক</small>
+                        <div class="metric-val" style="font-size:15px;">23.8103, 90.4125</div>
                     </div>
                 </div>
             </div>
-        </div>
-    </header>
 
-    <!-- মালিকের জন্য সিক্রেট অ্যাডমিন বার -->
-    <div id="ownerQuickBar" style="display:none; background:#0f172a; padding:8px 15px; justify-content:space-between; align-items:center; color:white; font-size:11px; border-bottom:2px solid #f85606;">
-        <span>🔐 ওনার মোড অ্যাক্টিভ (মাস্টার কন্ট্রোল প্যানেল)</span>
-        <div style="display:flex; gap:8px;">
-            <button onclick="openOwnerMasterModal('add')" style="background:#2563eb; color:white; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:10px;">
-                <i class="fa-solid fa-plus-circle"></i> পণ্য যোগ করুন
-            </button>
-            <button onclick="openOwnerMasterModal('orders')" style="background:#f59e0b; color:white; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:10px;">
-                <i class="fa-solid fa-clipboard-list"></i> অর্ডার লিস্ট (<span id="ownerOrderCount">0</span>)
-            </button>
+            <h3 style="margin-top: 20px;">🕹️ ম্যানুয়াল জয়স্টিক ও ওভাররাইড একশন</h3>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-cyan" onclick="sendRF('OWNER_CMD:HOVER')">২০ ফুট হোভার লক (Hover)</button>
+                <button class="btn btn-cyan" onclick="sendRF('OWNER_CMD:FORCE_DROP')">জরুরি উইঞ্চ রিলিজ</button>
+                <button class="btn btn-red" onclick="sendRF('OWNER_CMD:RTH')">RTH - অটো রিটার্ন হোম</button>
+            </div>
         </div>
+
+        <!-- PANEL 2: AUTONOMOUS MISSION CONTROL -->
+        <div id="p2" class="panel">
+            <h2 style="color: var(--accent-green); margin-top:0;">🤖 অটোনোমাস মিশন প্ল্যানার</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>কাস্টমার ফোন:</label>
+                    <input type="text" id="custPhone" value="01712345678">
+                </div>
+                <div>
+                    <label>সিকিউরিটি ওটিপি (OTP):</label>
+                    <input type="text" id="custOTP" value="8452">
+                </div>
+                <div>
+                    <label>টার্গেট Lat:</label>
+                    <input type="text" id="targetLat" value="23.8103">
+                </div>
+                <div>
+                    <label>টার্গেট Lng:</label>
+                    <input type="text" id="targetLng" value="90.4125">
+                </div>
+            </div>
+            <button class="btn btn-cyan" style="margin-top:20px; background:var(--accent-green);" onclick="startAutoMission()">START AUTONOMOUS MISSION</button>
+        </div>
+
+        <!-- PANEL 3: CUSTOMER PORTAL -->
+        <div id="p3" class="panel">
+            <h2 style="text-align: center; color: var(--accent-cyan); margin-top:0;">🌐 সার্ভার ও লোকাল কাস্টমার পোর্টাল</h2>
+            <div style="background: #090e17; padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0;">
+                <p style="color: var(--accent-green); font-size: 18px; margin: 0;">● বিমান কাস্টমারের ২০ ফুট ওপরে অবস্থান করছে</p>
+            </div>
+            <div style="max-width: 400px; margin: 0 auto;">
+                <input type="text" id="inputOTP" placeholder="8452" style="font-size: 28px; text-align: center; letter-spacing: 8px;">
+                <button class="btn btn-cyan" style="background: var(--accent-green); font-size: 18px; margin-top: 15px;" onclick="unlockParcel()">UNLATCH & DROP PARCEL</button>
+            </div>
+        </div>
+
     </div>
 
-    <!-- মূল পণ্যের কন্টেইনার -->
-    <main class="container">
-        <h2 class="section-title">জনপ্রিয় এআই গ্যাজেটসমূহ</h2>
-        <div class="product-grid" id="productContainer">
-            <!-- জাভাস্ক্রিপ্ট দিয়ে প্রোডাক্ট লোড হবে -->
-        </div>
-    </main>
+    <script>
+        let isAutonomousMode = false;
 
-    <!-- নিচের ফিক্সড নেভিগেশন বার -->
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('home', this)"><i class="fa-solid fa-house"></i><span>হোম</span></div>
-        <div class="nav-item" onclick="openTrackingModal(this)"><i class="fa-solid fa-box-archive"></i><span>ট্র্যাকিং</span></div>
-        <div class="nav-item" onclick="openChatModal(this)"><i class="fa-solid fa-robot"></i><span>এআই চ্যাট</span></div>
-        <div class="nav-item" onclick="openAccountModal(this)"><i class="fa-solid fa-user"></i><span>একাউন্ট</span></div>
-    </nav>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
 
-    <!-- মডাল: দারাজ স্টাইল প্রোডাক্ট ডিটেইলস ও রিভিউ -->
-    <div class="modal-screen" id="productDetailsModal">
-        <div class="modal-content daraz-modal">
-            <span class="close-modal" onclick="closeModals()">&times;</span>
-            <div id="darazModalBody"></div>
-        </div>
-    </div>
+        // এক চাপে মোড পরিবর্তন করার ফাংশন
+        function toggleFlightMode() {
+            isAutonomousMode = !isAutonomousMode;
+            let banner = document.getElementById('modeBanner');
+            let text = document.getElementById('modeText');
+            let btn = document.getElementById('toggleBtn');
 
-    <!-- মডাল: একাউন্ট ও প্রোফাইল -->
-    <div class="modal-screen" id="accountModal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModals()">&times;</span>
-            <h3>ইউজার অ্যাকাউন্ট ও প্রোফাইল</h3>
-            
-            <div id="accountStep1">
-                <p style="font-size:11px; color:#64748b; margin-bottom:8px;">অর্ডার করতে আপনার জিমেইল দিয়ে ভেরিফাই করুন:</p>
-                <input type="email" id="userEmail" placeholder="আপনার জিমেইল লিখুন" class="form-input">
-                <button class="form-btn" onclick="sendOtp()">ওটিপি (OTP) কোড পাঠান</button>
-            </div>
+            if(isAutonomousMode) {
+                text.innerText = "🤖 AUTONOMOUS AUTO-PILOT ACTIVE";
+                text.style.color = "var(--accent-green)";
+                banner.style.borderColor = "var(--accent-green)";
+                btn.innerText = "এক চাপে ম্যানুয়াল মোডে ফিরুন (Take Control)";
+                btn.style.background = "var(--accent-cyan)";
+                sendRF("MODE_SWITCH:AUTONOMOUS");
+            } else {
+                text.innerText = "🎮 MANUALLY CONTROLLED (JOYSTICK)";
+                text.style.color = "var(--accent-orange)";
+                banner.style.borderColor = "var(--accent-orange)";
+                btn.innerText = "এক চাপে অটোনোমাস অন করুন (Switch Auto)";
+                btn.style.background = "var(--accent-orange)";
+                sendRF("MODE_SWITCH:MANUAL");
+            }
+        }
 
-            <div id="accountStep2" style="display:none;">
-                <p style="font-size:11px; color:#64748b; margin-bottom:8px;" id="otpInstructionText">এআই কোড জেনারেট হচ্ছে...</p>
-                <input type="text" id="otpCode" placeholder="৪ ডিজিটের ওটিপি কোড" class="form-input">
-                <button class="form-btn" onclick="verifyOtp()">কোড ভেরিফাই করুন</button>
-            </div>
+        function sendRF(cmd) { alert("RF Signal Sent: " + cmd); }
 
-            <div id="accountStep3" style="display:none;">
-                <p id="loggedInEmail" style="font-size:11px; color:#16a34a; font-weight:bold; margin-bottom:8px;"></p>
-                
-                <label style="font-size:10px; font-weight:bold;">পূর্ণ নাম</label>
-                <input type="text" id="profileName" placeholder="আপনার নাম" class="form-input">
+        function startAutoMission() {
+            alert("মিশন শুরু! অটোনোমাস মোড চালু করা হলো।");
+            if(!isAutonomousMode) toggleFlightMode();
+            switchTab('p1');
+        }
 
-                <label style="font-size:10px; font-weight:bold;">ফোন নম্বর</label>
-                <input type="text" id="profilePhone" placeholder="+880..." class="form-input">
+        function unlockParcel() {
+            let otp = document.getElementById('inputOTP').value;
+            if(otp === "8452") alert("ওটিপি সঠিক! ২০ ফুট সুতা নেমে পার্সেল রিলিজ হচ্ছে...");
+            else alert("ভুল ওটিপি!");
+        }
 
-                <label style="font-size:10px; font-weight:bold;">সিটি / জেলা</label>
-                <input type="text" id="profileCity" placeholder="যেমন: ঢাকা" class="form-input">
-
-                <label style="font-size:10px; font-weight:bold;">পূর্ণ ঠিকানা ও জিপ কোড</label>
-                <textarea id="profileAddress" placeholder="বাসা/রোড, থানা, জিপ কোড" class="form-input" style="height:50px; resize:none;"></textarea>
-
-                <button class="form-btn" onclick="saveProfile()">প্রোফাইল সেভ করুন</button>
-                <button class="form-btn" style="background:#ef4444; margin-top:6px;" onclick="logout()">লগআউট</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- মডাল: চেকআউট / অর্ডার কনফার্মেশন -->
-    <div class="modal-screen" id="checkoutModal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModals()">&times;</span>
-            <h3>অর্ডার কনফার্মেশন</h3>
-            <div id="checkoutDetails" style="font-size:11px; background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid #e2e8f0;"></div>
-            <button class="form-btn" style="background:#22c55e;" onclick="confirmFinalOrder()">অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)</button>
-        </div>
-    </div>
-
-    <!-- মডাল: অর্ডার ট্র্যাকিং -->
-    <div class="modal-screen" id="trackingModal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModals()">&times;</span>
-            <h3>অর্ডার ট্র্যাকিং</h3>
-            <div id="trackingBody" style="font-size:11px; margin-top:10px;"></div>
-        </div>
-    </div>
-
-    <!-- মডাল: এআই চ্যাট -->
-    <div class="modal-screen" id="chatModal">
-        <div class="modal-content" style="max-height:80vh; display:flex; flex-direction:column;">
-            <span class="close-modal" onclick="closeModals()">&times;</span>
-            <h3>এআই সাপোর্ট চ্যাট</h3>
-            <div id="chatBody" style="flex:1; border:1px solid #e2e8f0; border-radius:6px; padding:8px; height:200px; overflow-y:auto; font-size:11px; background:#f8fafc; margin-bottom:8px;">
-                <div style="background:#e2e8f0; padding:5px; border-radius:4px; margin-bottom:5px;">🤖 এআই অ্যাসিস্ট্যান্ট: বলুন, আপনার কোন পণ্যটি সম্পর্কে জানতে বা অর্ডার করতে সাহায্য লাগবে?</div>
-            </div>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="chatInput" placeholder="এখানে কিছু লিখুন..." style="flex:1; padding:6px; font-size:11px; border:1px solid #cbd5e1; border-radius:4px;">
-                <button onclick="sendChatMessage()" style="background:#2563eb; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:11px; font-weight:bold; cursor:pointer;">পাঠান</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- মডাল: মালিকের মাস্টার প্যানেল -->
-    <div class="modal-screen" id="ownerMasterModal">
-        <div class="modal-content" style="max-height:88vh; overflow-y:auto;">
-            <span class="close-modal" onclick="closeModals()">&times;</span>
-            <div style="background:#0f172a; color:white; padding:8px; border-radius:6px; margin-bottom:12px; text-align:center;">
-                <h3 style="font-size:13px; margin:0; color:#f85606;"><i class="fa-solid fa-user-shield"></i> ওনার মাস্টার কন্ট্রোল প্যানেল</h3>
-            </div>
-
-            <div style="display:flex; gap:5px; margin-bottom:12px;">
-                <button onclick="switchAdminTab('add')" id="tabBtnAdd" style="flex:1; background:#2563eb; color:white; border:none; padding:6px; font-size:10px; border-radius:4px; font-weight:bold; cursor:pointer;">নতুন পণ্য যোগ</button>
-                <button onclick="switchAdminTab('orders')" id="tabBtnOrders" style="flex:1; background:#cbd5e1; color:#1e293b; border:none; padding:6px; font-size:10px; border-radius:4px; font-weight:bold; cursor:pointer;">অর্ডার লিস্ট</button>
-            </div>
-
-            <div id="adminAddProductSection">
-                <h4 id="adminModalTitle" style="font-size:11px; color:#1e293b; margin-bottom:6px;">নতুন পণ্য যুক্ত করুন</h4>
-                <input type="hidden" id="editProductId">
-                
-                <label style="font-size:10px; font-weight:bold;">পণ্যের নাম</label>
-                <input type="text" id="admName" class="form-input" placeholder="পণ্যের নাম">
-
-                <label style="font-size:10px; font-weight:bold;">বর্তমান মূল্য (টাকা)</label>
-                <input type="number" id="admPrice" class="form-input" placeholder="যেমন: ১২০০">
-
-                <label style="font-size:10px; font-weight:bold;">পূর্বের মূল্য / কাটা দাম (ঐচ্ছিক)</label>
-                <input type="number" id="admOldPrice" class="form-input" placeholder="যেমন: ১৫০০">
-
-                <label style="font-size:10px; font-weight:bold;">স্ট্যাটাস</label>
-                <select id="admStockStatus" class="form-input">
-                    <option value="available">ইন স্টক (Available)</option>
-                    <option value="stockout">স্টক আউট (Stock Out)</option>
-                </select>
-
-                <label style="font-size:10px; font-weight:bold;">পণ্যের ছবি (লোকাল ফাইল)</label>
-                <input type="file" id="admImageFile" class="form-input" accept="image/*">
-
-                <label style="font-size:10px; font-weight:bold;">পণ্যের বিস্তারিত বিবরণ</label>
-                <textarea id="admDesc" class="form-input" placeholder="পণ্যের গুণাগুণ ও বিবরণ লিখুন..." style="height:50px; resize:none;"></textarea>
-
-                <button class="form-btn" id="saveProductBtn" onclick="saveAdminProduct()">নতুন পণ্য যুক্ত করুন</button>
-
-                <hr style="border:0; border-top:1px solid #e2e8f0; margin:12px 0;">
-                <h4 style="font-size:11px; color:#1e293b; margin-bottom:4px;">সবার জন্য নোটিফিকেশন ব্রডকাস্ট</h4>
-                <input type="text" id="admAnnounce" class="form-input" placeholder="নোটিফিকেশন মেসেজ...">
-                <button class="form-btn" style="background:#f59e0b; margin-top:4px;" onclick="sendAdminBroadcast()">নোটিফিকেশন পাঠান</button>
-            </div>
-
-            <div id="adminOrdersSection" style="display:none;">
-                <h4 style="font-size:11px; color:#1e293b; margin-bottom:6px;">সকল কাস্টমার অর্ডার লিস্ট</h4>
-                <div id="ownerOrdersContainer"></div>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
+        setInterval(() => {
+            let icon = document.getElementById('droneIcon');
+            let x = (Math.random() - 0.5) * 50;
+            let y = (Math.random() - 0.5) * 50;
+            icon.style.transform = `translate(${x}px, ${y}px) rotate(${Math.random() * 360}deg)`;
+        }, 2000);
+    </script>
 </body>
 </html>
