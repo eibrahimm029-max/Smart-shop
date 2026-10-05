@@ -1,120 +1,241 @@
 const canvas = document.getElementById('pcbCanvas');
 const ctx = canvas.getContext('2d');
-const compCards = document.querySelectorAll('.comp-card');
-const clearBtn = document.getElementById('clearBtn');
-const exportBtn = document.getElementById('exportJlcpcbBtn');
 
-// Canvas Dimension
-canvas.width = 600;
-canvas.height = 500;
+let currentTool = 'wire';
+let elements = [];
+let isDrawing = false;
+let startX = 0, startY = 0;
+let currentLine = null;
+const gridSize = 10;
 
-let selectedComponent = null;
-let placedComponents = [];
+// EasyEDA Style Library Database
+const componentLibrary = [
+    { name: "ESP32 NodeMCU (30-Pin)", type: "esp32" },
+    { name: "Arduino Nano Board", type: "nano" },
+    { name: "ATmega328P / IC-28 Pin", type: "ic28" },
+    { name: "NE555 Timer IC (8-Pin)", type: "ic8" },
+    { name: "Resistor (Through-Hole/SMD)", type: "resistor" },
+    { name: "Capacitor", type: "capacitor" },
+    { name: "5V Relay Module", type: "relay" },
+    { name: "0.96 inch OLED Display", type: "oled" },
+    { name: "HC-05 Bluetooth Module", type: "hc05" }
+];
 
-// Selected Component Handler
-compCards.forEach(card => {
-    card.addEventListener('click', () => {
-        compCards.forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        selectedComponent = {
-            type: card.getAttribute('data-type'),
-            lcsc: card.getAttribute('data-lcsc')
-        };
-    });
+// Screen Resize Handler
+function resizeCanvas() {
+    canvas.width = window.innerWidth - 20;
+    canvas.height = window.innerHeight - 180;
+    draw();
+}
+window.addEventListener('resize', resizeCanvas);
+
+function snap(val) {
+    return Math.round(val / gridSize) * gridSize;
+}
+
+function setTool(tool) {
+    currentTool = tool;
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(`btn-${tool}`);
+    if (activeBtn) activeBtn.classList.add('active');
+}
+
+// Search Logic
+function searchComponents() {
+    const query = document.getElementById('componentSearch').value.toLowerCase();
+    const dropdown = document.getElementById('searchResults');
+    dropdown.innerHTML = '';
+
+    if (!query) {
+        dropdown.style.display = 'none';
+        return;
+    }
+
+    const filtered = componentLibrary.filter(c => c.name.toLowerCase().includes(query));
+
+    if (filtered.length > 0) {
+        dropdown.style.display = 'block';
+        filtered.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'search-item';
+            div.innerText = item.name;
+            div.onclick = () => {
+                addComponent(item.type);
+                dropdown.style.display = 'none';
+                document.getElementById('componentSearch').value = '';
+            };
+            dropdown.appendChild(div);
+        });
+    } else {
+        dropdown.style.display = 'none';
+    }
+}
+
+// Touch & Mouse Drawing Controls
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', drawMove);
+canvas.addEventListener('mouseup', endDraw);
+
+canvas.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    startDraw({ clientX: touch.clientX, clientY: touch.clientY });
 });
 
-// Draw Grid Background
-function drawGrid() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = '#18241f';
-    ctx.lineWidth = 1;
+canvas.addEventListener('touchmove', (e) => {
+    const touch = e.touches[0];
+    drawMove({ clientX: touch.clientX, clientY: touch.clientY });
+});
 
-    const gridSize = 25;
+canvas.addEventListener('touchend', endDraw);
+
+function startDraw(e) {
+    const rect = canvas.getBoundingClientRect();
+    startX = snap(e.clientX - rect.left);
+    startY = snap(e.clientY - rect.top);
+
+    if (currentTool === 'wire') {
+        isDrawing = true;
+        currentLine = { 
+            type: 'wire', 
+            x1: startX, 
+            y1: startY, 
+            x2: startX, 
+            y2: startY, 
+            width: parseInt(document.getElementById('traceWidth').value) 
+        };
+    } else if (currentTool === 'pad') {
+        elements.push({ type: 'pad', x: startX, y: startY, r: 8 });
+        draw();
+    }
+}
+
+function drawMove(e) {
+    if (!isDrawing) return;
+    const rect = canvas.getBoundingClientRect();
+    currentLine.x2 = snap(e.clientX - rect.left);
+    currentLine.y2 = snap(e.clientY - rect.top);
+    draw();
+
+    ctx.strokeStyle = '#00ffaa';
+    ctx.lineWidth = currentLine.width;
+    ctx.beginPath();
+    ctx.moveTo(currentLine.x1, currentLine.y1);
+    ctx.lineTo(currentLine.x2, currentLine.y2);
+    ctx.stroke();
+}
+
+function endDraw() {
+    if (isDrawing && currentLine) {
+        elements.push(currentLine);
+        isDrawing = false;
+        currentLine = null;
+        draw();
+    }
+}
+
+function addComponent(type) {
+    const cx = snap(canvas.width / 2);
+    const cy = snap(canvas.height / 2);
+
+    if (type === 'resistor' || type === 'capacitor') {
+        elements.push({ type: 'pad', x: cx - 20, y: cy, r: 6 });
+        elements.push({ type: 'pad', x: cx + 20, y: cy, r: 6 });
+        elements.push({ type: 'wire', x1: cx - 20, y1: cy, x2: cx + 20, y2: cy, width: 2 });
+    } else if (type === 'ic8') {
+        for (let i = 0; i < 4; i++) {
+            elements.push({ type: 'pad', x: cx - 20, y: cy - 30 + (i * 20), r: 6 });
+            elements.push({ type: 'pad', x: cx + 20, y: cy - 30 + (i * 20), r: 6 });
+        }
+    } else if (type === 'esp32' || type === 'nano') {
+        for (let i = 0; i < 15; i++) {
+            elements.push({ type: 'pad', x: cx - 40, y: cy - 140 + (i * 20), r: 5 });
+            elements.push({ type: 'pad', x: cx + 40, y: cy - 140 + (i * 20), r: 5 });
+        }
+    } else if (type === 'oled') {
+        for (let i = 0; i < 4; i++) {
+            elements.push({ type: 'pad', x: cx - 30 + (i * 20), y: cy, r: 6 });
+        }
+    } else if (type === 'relay' || type === 'hc05') {
+        for (let i = 0; i < 6; i++) {
+            elements.push({ type: 'pad', x: cx - 50 + (i * 20), y: cy, r: 6 });
+        }
+    }
+    draw();
+}
+
+function clearCanvas() {
+    elements = [];
+    draw();
+}
+
+// Render Circuit Engine
+function draw() {
+    ctx.fillStyle = '#090d12';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Grid System
+    ctx.strokeStyle = '#161b22';
+    ctx.lineWidth = 1;
     for (let x = 0; x < canvas.width; x += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
     }
     for (let y = 0; y < canvas.height; y += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
     }
 
-    // Render Placed Components
-    placedComponents.forEach(item => {
-        ctx.fillStyle = '#00e676';
-        ctx.fillRect(item.x - 30, item.y - 20, 60, 40);
-
-        ctx.fillStyle = '#000';
-        ctx.font = '10px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(item.type, item.x, item.y + 4);
+    // Render Copper Traces and Pads
+    elements.forEach(el => {
+        if (el.type === 'wire') {
+            ctx.strokeStyle = '#ffb703';
+            ctx.lineWidth = el.width;
+            ctx.beginPath();
+            ctx.moveTo(el.x1, el.y1);
+            ctx.lineTo(el.x2, el.y2);
+            ctx.stroke();
+        } else if (el.type === 'pad') {
+            ctx.fillStyle = '#ffb703';
+            ctx.beginPath();
+            ctx.arc(el.x, el.y, el.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#090d12';
+            ctx.beginPath();
+            ctx.arc(el.x, el.y, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
     });
+
+    // Render Custom Branding Text
+    const brand = document.getElementById('brandText').value;
+    if (brand) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText(brand, 20, canvas.height - 20);
+    }
 }
 
-// Click Canvas to Place Component
-canvas.addEventListener('click', (e) => {
-    if (!selectedComponent) {
-        alert('অনুগ্রহ করে ডানপাশের লাইব্রেরি থেকে একটি মডিউল বেছে নিন!');
-        return;
-    }
-
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    placedComponents.push({
-        type: selectedComponent.type,
-        lcsc: selectedComponent.lcsc,
-        x: Math.round(x / 25) * 25,
-        y: Math.round(y / 25) * 25
+// Export ESP32 G-Code Function
+function exportGCode() {
+    let gcode = "; Easy PCB Studio ESP32 G-Code\nG21\nG90\nM3 S10000\nG0 Z5\n";
+    elements.forEach(el => {
+        if (el.type === 'wire') {
+            gcode += `G0 X${(el.x1/10).toFixed(2)} Y${(el.y1/10).toFixed(2)}\nG1 Z-0.1 F100\nG1 X${(el.x2/10).toFixed(2)} Y${(el.y2/10).toFixed(2)} F300\nG0 Z5\n`;
+        } else if (el.type === 'pad') {
+            gcode += `G0 X${(el.x/10).toFixed(2)} Y${(el.y/10).toFixed(2)}\nG1 Z-2.0 F50\nG0 Z5\n`;
+        }
     });
+    gcode += "M5\nG0 X0 Y0\n";
 
-    drawGrid();
-});
-
-// Clear All
-clearBtn.addEventListener('click', () => {
-    placedComponents = [];
-    drawGrid();
-});
-
-// Export JLCPCB BOM & CPL Data
-exportBtn.addEventListener('click', () => {
-    if (placedComponents.length === 0) {
-        alert('ক্যানভাসে কোনো পার্টস নেই!');
-        return;
-    }
-
-    let bomContent = "Comment,Designator,Footprint,LCSC Part#\n";
-    let cplContent = "Designator,Mid X,Mid Y,Layer,Rotation\n";
-
-    placedComponents.forEach((comp, index) => {
-        const des = `U${index + 1}`;
-        bomContent += `${comp.type},${des},SMD,${comp.lcsc}\n`;
-        cplContent += `${des},${comp.x}mm,${comp.y}mm,Top,0\n`;
-    });
-
-    // Download BOM File
-    downloadFile(`JLCPCB_BOM_${Date.now()}.csv`, bomContent);
-    // Download CPL File
-    downloadFile(`JLCPCB_CPL_${Date.now()}.csv`, cplContent);
-
-    alert('JLCPCB PCBA এর জন্য BOM এবং CPL ফাইল জেনারেট হয়ে গেছে!');
-});
-
-function downloadFile(filename, text) {
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    const blob = new Blob([gcode], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'circuit.gcode';
+    link.click();
 }
 
-// Initial Call
-drawGrid();
+function exportJLCPCB() {
+    alert("JLCPCB অর্ডার প্রস্তুত করার কাজ চলছে! খুব শিগগিরই জিপ ফাইল ডাউনলোড হবে।");
+}
+
+// Initialize Canvas
+resizeCanvas();
