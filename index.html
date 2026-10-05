@@ -8,40 +8,46 @@
 </head>
 <body>
 
-    <!-- Top Header Navigation -->
+    <!-- Header Navigation -->
     <header>
         <div class="logo">
             <span class="icon">⚡</span> Easy PCB STUDIO
         </div>
         <div class="header-actions">
-            <button class="btn btn-danger" onclick="clearCanvas()">🗑️ মুছে ফেলুন</button>
-            <button class="btn btn-success" onclick="exportGCode()">⚡ G-Code Export</button>
-            <button class="btn btn-primary" onclick="exportJLCPCB()">📦 JLCPCB Order</button>
+            <button class="btn btn-warning" onclick="undoLast()">↩️ আন্ডু (Undo)</button>
+            <button class="btn btn-danger" onclick="clearCanvas()">🗑️ সব সাফ করুন</button>
+            <button class="btn btn-success" onclick="exportGCode()">⚡ G-Code Download</button>
+            <button class="btn btn-primary" onclick="exportJLCPCB()">📦 Gerber ZIP Export</button>
         </div>
     </header>
 
     <!-- Main Workspace -->
     <div class="main-container">
-        <!-- Search & Quick Tools Bar -->
+        <!-- Live Open EDA Library Search ToolBar -->
         <div class="tool-bar">
             <div class="search-box">
-                <input type="text" id="componentSearch" placeholder="🔍 সার্চ করুন (ESP32, Nano, OLED, Relay...)" oninput="searchComponents()">
+                <input type="text" id="componentSearch" placeholder="🔍 লাইভ লাইব্রেরি ও বোর্ড সার্চ (ESP32, Relay, OLED, Nano)..." oninput="searchComponents()">
                 <div id="searchResults" class="search-dropdown"></div>
             </div>
             <button class="tool-btn active" id="btn-wire" onclick="setTool('wire')">✏️ Wire</button>
             <button class="tool-btn" id="btn-pad" onclick="setTool('pad')">🔴 Pad</button>
+            <button class="tool-btn" id="btn-select" onclick="setTool('select')">🖐️ Move/Select</button>
         </div>
 
-        <!-- Interactive Canvas Area -->
+        <!-- Canvas Area -->
         <div class="canvas-wrapper">
             <canvas id="pcbCanvas"></canvas>
         </div>
 
-        <!-- Bottom Controls & Branding Panel -->
+        <!-- Bottom Controls Panel -->
         <div class="bottom-panel">
             <div class="input-group">
-                <label>🏷️ ব্র্যান্ড/লোগো নাম:</label>
-                <input type="text" id="brandText" placeholder="আপনার ব্র্যান্ডের নাম লিখুন" oninput="draw()">
+                <label>🏷️ প্রজেক্ট/ফাইল নাম:</label>
+                <input type="text" id="projectName" value="My_PCB_Design" placeholder="ফাইলের নাম লিখুন">
+            </div>
+            <div class="input-group">
+                <label>🏷️ কাস্টম লোগো/টেক্সট:</label>
+                <input type="text" id="brandText" placeholder="বোর্ডে লেখার নাম" oninput="draw()">
             </div>
             <div class="input-group">
                 <label>📏 ট্র্যাকিং থিকনেস (mm):</label>
@@ -50,6 +56,8 @@
         </div>
     </div>
 
+    <!-- JSZip Library for Client-side Gerber ZIP Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
