@@ -11,50 +11,74 @@ let currentLine = null;
 const gridSize = 10;
 
 // =========================================================
-// EASYEDA STYLE COMPONENT & CIRCUIT SYSTEM DATABASE (OFFLINE)
+// EASYEDA STYLE MASTER LIBRARY WITH PIN NAMES & LABELS
 // =========================================================
 const EASYEDA_MASTER_LIBRARY = [
-    // --- CATEGORY 1: SYSTEM CIRCUITS / MODULES (সার্কিট ডিজাইন) ---
-    { name: "ESP32 DevKit V1 Module Circuit", type: "esp32_board", category: "Circuit", pins: 30 },
-    { name: "Arduino Uno R3 Schematic Board", type: "arduino_uno", category: "Circuit", pins: 28 },
-    { name: "4-Channel Relay Control Board", type: "relay_4ch_board", category: "Circuit", pins: 8 },
-    { name: "LM2596 DC-DC Buck Converter Circuit", type: "lm2596_board", category: "Circuit", pins: 4 },
-    { name: "TP4056 LiPo Battery Charger Circuit", type: "tp4056_board", category: "Circuit", pins: 4 },
-    { name: "L298N Motor Driver Module Circuit", type: "l298n_board", category: "Circuit", pins: 10 },
-
-    // --- CATEGORY 2: COMPONENTS & ICs (কম্পোনেন্টস) ---
-    // Microcontrollers & ICs
-    { name: "ESP32-WROOM-32 Pinout", type: "ic30", category: "Component", pins: 30 },
-    { name: "ESP8266 ESP-12F IC", type: "ic16", category: "Component", pins: 16 },
-    { name: "ATmega328P-PU DIP-28", type: "ic28", category: "Component", pins: 28 },
-    { name: "ATTiny85 DIP-8", type: "ic8", category: "Component", pins: 8 },
-    { name: "NE555 Timer IC", type: "ic8", category: "Component", pins: 8 },
-    { name: "LM358 Op-Amp IC", type: "ic8", category: "Component", pins: 8 },
-    { name: "L7805 Voltage Regulator", type: "ic3", category: "Component", pins: 3 },
-    
-    // Displays & Sensors
-    { name: "0.96 OLED Display I2C (128x64)", type: "display4", category: "Component", pins: 4 },
-    { name: "LCD 1602 I2C Display Module", type: "display4", category: "Component", pins: 4 },
-    { name: "HC-SR04 Ultrasonic Sensor", type: "sensor4", category: "Component", pins: 4 },
-    { name: "DHT11 Temp & Humidity Sensor", type: "sensor4", category: "Component", pins: 4 },
-    { name: "MPU6050 Gyro Sensor", type: "sensor8", category: "Component", pins: 8 },
-    
-    // Passives & Semiconductors
-    { name: "Resistor (AXIAL / SMD)", type: "passive2", category: "Component", pins: 2 },
-    { name: "Capacitor Ceramic/Radial", type: "passive2", category: "Component", pins: 2 },
-    { name: "LED 5mm Red/Green/Blue", type: "passive2", category: "Component", pins: 2 },
-    { name: "Diode 1N4007 / 1N4148", type: "passive2", category: "Component", pins: 2 },
-    { name: "NPN Transistor BC547 / 2N2222", type: "ic3", category: "Component", pins: 3 },
-    { name: "Mosfet IRFZ44N / N-Channel", type: "ic3", category: "Component", pins: 3 }
+    // --- MICROCONTROLLERS & FLASH MEMORY ICs ---
+    {
+        name: "ESP32 DevKit V1 (30-Pin)",
+        type: "esp32_board",
+        category: "Microcontroller",
+        pins: [
+            { left: "EN", right: "CLK" }, { left: "VP", right: "SD0" }, { left: "VN", right: "SD1" },
+            { left: "D34", right: "SD2" }, { left: "D35", right: "SD3" }, { left: "D32", right: "CMD" },
+            { left: "D33", right: "5V" }, { left: "D25", right: "GND" }, { left: "D26", right: "3V3" },
+            { left: "D27", right: "TX0" }, { left: "D14", right: "RX0" }, { left: "D12", right: "D22" },
+            { left: "D13", right: "D21" }, { left: "GND", right: "D19" }, { left: "VIN", right: "D18" }
+        ]
+    },
+    {
+        name: "W25Q64 Flash Memory IC (SOIC-8)",
+        type: "ic_dip8",
+        category: "IC / Memory",
+        label: "FLASH IC",
+        pinLabels: ["/CS", "DO", "/WP", "GND", "DI", "CLK", "/HOLD", "VCC"]
+    },
+    {
+        name: "USB Type-A Male Connector",
+        type: "usb_a",
+        category: "Connector",
+        label: "USB A",
+        pinLabels: ["VBUS", "D-", "D+", "GND"]
+    },
+    {
+        name: "USB Type-C (16-Pin / 4-Pin Module)",
+        type: "usb_c",
+        category: "Connector",
+        label: "TYPE-C",
+        pinLabels: ["GND", "VBUS", "D-", "D+"]
+    },
+    {
+        name: "ATmega328P DIP-28 IC",
+        type: "ic_dip28",
+        category: "Microcontroller IC",
+        label: "ATmega328P",
+        pinLabels: [
+            "RESET", "RXD", "TXD", "INT0", "INT1", "XCK", "VCC", "GND", "XTAL1", "XTAL2", "OC1A", "OC1B", "OC2A", "VCC",
+            "GND", "PB1", "PB2", "PB3", "PB4", "PB5", "AVCC", "ADC7", "GND", "AREF", "ADC0", "ADC1", "ADC2", "ADC3"
+        ]
+    },
+    {
+        name: "0.96 OLED Display I2C",
+        type: "display_i2c",
+        category: "Display",
+        label: "OLED 0.96",
+        pinLabels: ["GND", "VCC", "SCL", "SDA"]
+    },
+    {
+        name: "5V Relay Module",
+        type: "relay_module",
+        category: "Module",
+        label: "5V RELAY",
+        pinLabels: ["VCC", "GND", "IN", "NO", "COM", "NC"]
+    }
 ];
 
-// Combine Saved Local Designs with Built-in Library
 function getCombinedLibrary() {
     const customSaved = JSON.parse(localStorage.getItem('my_custom_pcb_components') || '[]');
     return [...customSaved, ...EASYEDA_MASTER_LIBRARY];
 }
 
-// Screen Resize Handler
 function resizeCanvas() {
     canvas.width = window.innerWidth - 20;
     canvas.height = window.innerHeight - 180;
@@ -74,7 +98,7 @@ function setTool(tool) {
 }
 
 // =========================================================
-// INSTANT SEARCH ENGINE (NO API / NO CORS ISSUES)
+// INSTANT SEARCH WITH DETAILED COMPONENT INFO
 // =========================================================
 function searchComponents() {
     const query = document.getElementById('componentSearch').value.trim().toLowerCase();
@@ -87,7 +111,6 @@ function searchComponents() {
     }
 
     const library = getCombinedLibrary();
-    // Fast Filter Logic
     const filtered = library.filter(item => 
         item.name.toLowerCase().includes(query) || 
         item.category.toLowerCase().includes(query)
@@ -97,22 +120,17 @@ function searchComponents() {
         dropdown.style.display = 'block';
         filtered.slice(0, 15).forEach(item => {
             const div = document.createElement('div');
-            
-            // Differentiate Category Styles like EasyEDA
-            let tagColor = item.category === 'Circuit' ? '#00a8ff' : '#00ffaa';
-            if(item.isCustom) tagColor = '#ffb703';
-
             div.className = 'search-item';
             div.innerHTML = `
                 <span><b>[${item.category}]</b> ${item.name}</span>
-                <small style="color:${tagColor}">${item.isCustom ? 'Custom' : item.pins ? item.pins + ' Pins' : ''}</small>
+                <small style="color:#00ffaa">${item.isCustom ? 'Custom' : 'Footprint'}</small>
             `;
             
             div.onclick = () => {
                 if (item.isCustom) {
                     loadCustomCircuit(item.elements);
                 } else {
-                    renderComponentFootprint(item.type, item.pins);
+                    renderComponentFootprint(item);
                 }
                 dropdown.style.display = 'none';
                 document.getElementById('componentSearch').value = '';
@@ -121,34 +139,31 @@ function searchComponents() {
         });
     } else {
         dropdown.style.display = 'block';
-        dropdown.innerHTML = `<div class="search-item" style="color:#e63946;">❌ কোনো কম্পোনেন্ট বা সার্কিট পাওয়া যায়নি</div>`;
+        dropdown.innerHTML = `<div class="search-item" style="color:#e63946;">❌ কোনো পার্টস বা মডিউল পাওয়া যায়নি</div>`;
     }
 }
 
-// =========================================================
-// CUSTOM CIRCUIT SAVE TO LIBRARY (PERSISTENT STORAGE)
-// =========================================================
+// Save Custom Design Logic
 function saveDesignToLibrary() {
     if (elements.length === 0) {
-        alert("ক্যানভাসে কোনো ডিজাইন বা সার্কিট নেই!");
+        alert("ক্যানভাসে কোনো প্রজেক্ট নেই!");
         return;
     }
 
-    const designName = prompt("সার্কিট বা মডিউলটির একটি নাম দিন:", "My_Custom_Circuit");
+    const designName = prompt("সার্কিট বা মডিউলটির নাম দিন:", "USB_Flash_Module");
     if (!designName) return;
 
     const customSaved = JSON.parse(localStorage.getItem('my_custom_pcb_components') || '[]');
     const newComponent = {
         name: designName,
-        type: 'custom_' + Date.now(),
-        category: "Circuit",
+        category: "Custom Module",
         isCustom: true,
         elements: JSON.parse(JSON.stringify(elements))
     };
 
     customSaved.unshift(newComponent);
     localStorage.setItem('my_custom_pcb_components', JSON.stringify(customSaved));
-    alert(`"${designName}" সফলভাবে লাইব্রেরিতে যুক্ত হয়েছে!`);
+    alert(`"${designName}" কাস্টম লাইব্রেরিতে সেভ হয়েছে!`);
 }
 
 function loadCustomCircuit(savedElements) {
@@ -157,7 +172,7 @@ function loadCustomCircuit(savedElements) {
     
     savedElements.forEach(el => {
         let cloned = { ...el, id: Date.now() + Math.random() };
-        if (cloned.type === 'pad') {
+        if (cloned.type === 'pad' || cloned.type === 'label' || cloned.type === 'box') {
             cloned.x += (cx - 100);
             cloned.y += (cy - 100);
         } else if (cloned.type === 'wire') {
@@ -171,7 +186,7 @@ function loadCustomCircuit(savedElements) {
     draw();
 }
 
-// Canvas Touch & Mouse Drawing Handlers
+// Touch & Mouse Drawing Event Listeners
 canvas.addEventListener('mousedown', handleStart);
 canvas.addEventListener('mousemove', handleMove);
 canvas.addEventListener('mouseup', handleEnd);
@@ -203,7 +218,7 @@ function handleStart(e) {
             width: parseInt(document.getElementById('traceWidth').value) 
         };
     } else if (currentTool === 'pad') {
-        elements.push({ id: Date.now(), type: 'pad', x: startX, y: startY, r: 8 });
+        elements.push({ id: Date.now(), type: 'pad', x: startX, y: startY, r: 8, name: "PAD" });
         draw();
     } else if (currentTool === 'select') {
         selectedElement = elements.find(el => {
@@ -270,58 +285,76 @@ function undoLast() {
 }
 
 function clearCanvas() {
-    if (confirm("আপনি কি সমস্ত ড্রয়িং মুছে ফেলতে চান?")) {
+    if (confirm("সমস্ত ড্রয়িং মুছে ফেলতে চান?")) {
         elements = [];
         draw();
     }
 }
 
-// Dynamic Component & Board Layout Renderer Engine
-function renderComponentFootprint(type, pins = 2) {
+// =========================================================
+// RENDER COMPONENT FOOTPRINTS WITH SILKSCREEN & PIN NAMES
+// =========================================================
+function renderComponentFootprint(item) {
     const cx = snap(canvas.width / 2);
     const cy = snap(canvas.height / 2);
 
-    if (type === 'passive2') {
-        elements.push({ id: Date.now(), type: 'pad', x: cx - 20, y: cy, r: 6 });
-        elements.push({ id: Date.now()+1, type: 'pad', x: cx + 20, y: cy, r: 6 });
-        elements.push({ id: Date.now()+2, type: 'wire', x1: cx - 20, y1: cy, x2: cx + 20, y2: cy, width: 2 });
-    } else if (type === 'ic3') {
-        for(let i=0; i<3; i++) {
-            elements.push({ id: Date.now()+i, type: 'pad', x: cx - 20 + (i * 20), y: cy, r: 6 });
-        }
-    } else if (type === 'display4' || type === 'sensor4') {
-        for(let i=0; i<4; i++) {
-            elements.push({ id: Date.now()+i, type: 'pad', x: cx - 30 + (i * 20), y: cy, r: 6 });
-        }
-    } else if (type === 'esp32_board') {
-        for (let i = 0; i < 15; i++) {
-            elements.push({ id: Date.now()+i, type: 'pad', x: cx - 50, y: cy - 140 + (i * 20), r: 5 });
-            elements.push({ id: Date.now()+i+20, type: 'pad', x: cx + 50, y: cy - 140 + (i * 20), r: 5 });
-        }
-        elements.push({ id: Date.now()+50, type: 'wire', x1: cx - 50, y1: cy - 140, x2: cx + 50, y2: cy - 140, width: 2 });
-    } else if (type === 'relay_4ch_board') {
-        for(let r=0; r<4; r++) {
-            let offsetY = cy - 60 + (r * 40);
-            elements.push({ id: Date.now()+r, type: 'pad', x: cx - 40, y: offsetY, r: 6 });
-            elements.push({ id: Date.now()+r+10, type: 'pad', x: cx + 40, y: offsetY, r: 6 });
-            elements.push({ id: Date.now()+r+20, type: 'wire', x1: cx - 40, y1: offsetY, x2: cx + 40, y2: offsetY, width: 3 });
-        }
-    } else {
-        // Generic DIP IC (Dual Inline Pin) Calculation Engine
-        const halfPins = Math.ceil(pins / 2);
-        for (let i = 0; i < halfPins; i++) {
-            elements.push({ id: Date.now() + i, type: 'pad', x: cx - 30, y: cy - (halfPins * 10) + (i * 20), r: 5 });
-            elements.push({ id: Date.now() + i + 50, type: 'pad', x: cx + 30, y: cy - (halfPins * 10) + (i * 20), r: 5 });
+    if (item.type === 'esp32_board') {
+        const pinGap = 16;
+        const widthGap = 100;
+        const totalPins = item.pins.length;
+
+        // Draw Board Border Line
+        elements.push({
+            type: 'box',
+            x: cx - widthGap / 2 - 25,
+            y: cy - (totalPins * pinGap) / 2 - 15,
+            w: widthGap + 50,
+            h: totalPins * pinGap + 30,
+            label: item.name
+        });
+
+        item.pins.forEach((p, i) => {
+            let yPos = cy - (totalPins * pinGap) / 2 + (i * pinGap);
+
+            // Left Pins
+            elements.push({ type: 'pad', x: cx - widthGap / 2, y: yPos, r: 5, name: p.left, align: 'right' });
+            // Right Pins
+            elements.push({ type: 'pad', x: cx + widthGap / 2, y: yPos, r: 5, name: p.right, align: 'left' });
+        });
+    } else if (item.pinLabels) {
+        const count = item.pinLabels.length;
+        const half = Math.ceil(count / 2);
+
+        elements.push({
+            type: 'box',
+            x: cx - 50,
+            y: cy - (half * 20) / 2 - 10,
+            w: 100,
+            h: half * 20 + 20,
+            label: item.label || item.name
+        });
+
+        for (let i = 0; i < half; i++) {
+            let yPos = cy - (half * 20) / 2 + (i * 20);
+            if (item.pinLabels[i]) {
+                elements.push({ type: 'pad', x: cx - 35, y: yPos, r: 5, name: item.pinLabels[i], align: 'right' });
+            }
+            if (item.pinLabels[count - 1 - i]) {
+                elements.push({ type: 'pad', x: cx + 35, y: yPos, r: 5, name: item.pinLabels[count - 1 - i], align: 'left' });
+            }
         }
     }
     draw();
 }
 
-// Render Canvas Engine
+// =========================================================
+// RENDER CANVAS ENGINE (PIN LABELS & TEXT DRAWING)
+// =========================================================
 function draw() {
     ctx.fillStyle = '#090d12';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Draw Grid Lines
     ctx.strokeStyle = '#161b22';
     ctx.lineWidth = 1;
     for (let x = 0; x < canvas.width; x += gridSize) {
@@ -331,8 +364,19 @@ function draw() {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
     }
 
+    // Render Canvas Elements
     elements.forEach(el => {
-        if (el.type === 'wire') {
+        if (el.type === 'box') {
+            // Silkscreen Border
+            ctx.strokeStyle = '#00a8ff';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(el.x, el.y, el.w, el.h);
+            
+            ctx.fillStyle = '#00a8ff';
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(el.label, el.x + el.w / 2, el.y + 15);
+        } else if (el.type === 'wire') {
             ctx.strokeStyle = '#ffb703';
             ctx.lineWidth = el.width;
             ctx.beginPath();
@@ -340,14 +384,33 @@ function draw() {
             ctx.lineTo(el.x2, el.y2);
             ctx.stroke();
         } else if (el.type === 'pad') {
+            // Copper Pad
             ctx.fillStyle = '#ffb703';
             ctx.beginPath();
             ctx.arc(el.x, el.y, el.r, 0, Math.PI * 2);
             ctx.fill();
+
+            // Hole
             ctx.fillStyle = '#090d12';
             ctx.beginPath();
-            ctx.arc(el.x, el.y, 3, 0, Math.PI * 2);
+            ctx.arc(el.x, el.y, 2.5, 0, Math.PI * 2);
             ctx.fill();
+
+            // Render Pin Name / Label
+            if (el.name) {
+                ctx.fillStyle = '#00ffaa';
+                ctx.font = '9px Consolas, monospace';
+                if (el.align === 'right') {
+                    ctx.textAlign = 'right';
+                    ctx.fillText(el.name, el.x - 8, el.y + 3);
+                } else if (el.align === 'left') {
+                    ctx.textAlign = 'left';
+                    ctx.fillText(el.name, el.x + 8, el.y + 3);
+                } else {
+                    ctx.textAlign = 'center';
+                    ctx.fillText(el.name, el.x, el.y - 8);
+                }
+            }
         }
     });
 
@@ -359,7 +422,7 @@ function draw() {
     }
 }
 
-// Export G-Code Engine
+// Export Engines
 function exportGCode() {
     const projName = document.getElementById('projectName').value.trim() || 'My_PCB_Design';
     let gcode = `; Easy PCB Studio Export - ${projName}\nG21\nG90\nM3 S10000\nG0 Z5\n`;
@@ -379,7 +442,6 @@ function exportGCode() {
     link.click();
 }
 
-// Gerber ZIP File Engine
 function exportJLCPCB() {
     const projName = document.getElementById('projectName').value.trim() || 'My_PCB_Design';
     const zip = new JSZip();
@@ -396,5 +458,5 @@ function exportJLCPCB() {
     });
 }
 
-// Initialize Screen
+// Initialize
 resizeCanvas();
