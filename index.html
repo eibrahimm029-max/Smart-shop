@@ -16,6 +16,7 @@
         <div class="header-actions">
             <button class="btn btn-warning" onclick="undoLast()">↩️ আন্ডু (Undo)</button>
             <button class="btn btn-danger" onclick="clearCanvas()">🗑️ সব সাফ করুন</button>
+            <button class="btn btn-primary" onclick="saveDesignToLibrary()">⭐ লাইব্রেরিতে সেভ করুন</button>
             <button class="btn btn-success" onclick="exportGCode()">⚡ G-Code Download</button>
             <button class="btn btn-primary" onclick="exportJLCPCB()">📦 Gerber ZIP Export</button>
         </div>
@@ -26,7 +27,7 @@
         <!-- Live Open EDA Library Search ToolBar -->
         <div class="tool-bar">
             <div class="search-box">
-                <input type="text" id="componentSearch" placeholder="🔍 লাইভ লাইব্রেরি ও বোর্ড সার্চ (ESP32, Relay, OLED, Nano)..." oninput="searchComponents()">
+                <input type="text" id="componentSearch" placeholder="🔍 ইনস্ট্যান্ট পার্টস সার্চ (ESP32, Relay, OLED, Resistor, Nano)..." oninput="searchComponents()">
                 <div id="searchResults" class="search-dropdown"></div>
             </div>
             <button class="tool-btn active" id="btn-wire" onclick="setTool('wire')">✏️ Wire</button>
@@ -42,7 +43,7 @@
         <!-- Bottom Controls Panel -->
         <div class="bottom-panel">
             <div class="input-group">
-                <label>🏷️ প্রজেক্ট/ফাইল নাম:</label>
+                <label>🏷️️ প্রজেক্ট/ফাইল নাম:</label>
                 <input type="text" id="projectName" value="My_PCB_Design" placeholder="ফাইলের নাম লিখুন">
             </div>
             <div class="input-group">
