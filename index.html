@@ -3,341 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AeroDrop Dynamic Dual-Control Center</title>
-    <style>
-        :root {
-            --bg: #070a12;
-            --panel-bg: #101726;
-            --accent-cyan: #00f2fe;
-            --accent-green: #00ff88;
-            --accent-red: #ff3366;
-            --accent-orange: #ff9900;
-            --text-main: #f1f5f9;
-            --text-sub: #64748b;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', System-UI, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            overflow-x: hidden;
-        }
-
-        .nav-tabs {
-            display: flex;
-            justify-content: center;
-            background: rgba(16, 23, 38, 0.9);
-            border-bottom: 1px solid rgba(0, 242, 254, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-
-        .tab-btn {
-            padding: 16px 28px;
-            background: none;
-            border: none;
-            color: var(--text-sub);
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
-        }
-
-        .tab-btn.active {
-            color: var(--accent-cyan);
-            border-bottom: 3px solid var(--accent-cyan);
-            background: rgba(0, 242, 254, 0.05);
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 20px auto;
-            padding: 10px;
-        }
-
-        .panel {
-            display: none;
-            background: var(--panel-bg);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .panel.active { display: block; animation: fadeIn 0.3s ease; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Mode Switch Button Banner */
-        .mode-banner {
-            background: #090e17;
-            border: 2px solid var(--accent-orange);
-            border-radius: 14px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .mode-status {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--accent-orange);
-        }
-
-        .toggle-btn {
-            padding: 15px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            transition: 0.3s;
-            background: var(--accent-orange);
-            color: #000;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
-
-        @media(max-width: 768px) { 
-            .grid-3 { grid-template-columns: 1fr; } 
-            .mode-banner { flex-direction: column; gap: 15px; text-align: center; }
-        }
-
-        .radar-box {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            background: radial-gradient(circle, #1a263b 0%, #070a12 80%);
-            border-radius: 14px;
-            border: 2px solid var(--accent-cyan);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .radar-sweep {
-            position: absolute;
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            border: 1px solid rgba(0, 242, 254, 0.3);
-            background: conic-gradient(from 0deg, rgba(0,242,254,0.3), transparent 60deg);
-            animation: spin 4s linear infinite;
-        }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        .drone-3d-icon {
-            position: absolute;
-            width: 36px;
-            height: 36px;
-            background: var(--accent-cyan);
-            clip-path: polygon(50% 0%, 0% 100%, 50% 80%, 100% 100%);
-            box-shadow: 0 0 20px var(--accent-cyan);
-            transition: all 0.5s ease;
-        }
-
-        .metric-card {
-            background: #090e17;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #1a2436;
-            margin-bottom: 12px;
-        }
-
-        .metric-val {
-            font-size: 22px;
-            font-weight: bold;
-            color: var(--accent-green);
-            margin-top: 5px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: 0.2s;
-        }
-
-        .btn-cyan { background: var(--accent-cyan); color: #000; }
-        .btn-red { background: var(--accent-red); color: #fff; }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            background: #090e17;
-            border: 1px solid #222f47;
-            color: #fff;
-            border-radius: 8px;
-            box-sizing: border-box;
-            margin-top: 6px;
-        }
-    </style>
+    <title>Easy PCB Studio - JLCPCB Ready</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <div class="app-container">
+        <!-- Top Navigation Bar -->
+        <header class="top-bar">
+            <div class="logo">
+                <i class="fa-solid fa-microchip logo-icon"></i>
+                <span>Easy PCB <strong>STUDIO</strong></span>
+            </div>
+            <div class="actions">
+                <button id="clearBtn" class="btn btn-danger"><i class="fa-solid fa-trash"></i> মুছে ফেলুন</button>
+                <button id="exportJlcpcbBtn" class="btn btn-success"><i class="fa-solid fa-file-export"></i> JLCPCB PCBA Export</button>
+            </div>
+        </header>
 
-    <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('p1')">🕹️ ১. 3D রিয়েল-টাইম ফ্লাই ও মোড কন্ট্রোল</button>
-        <button class="tab-btn" onclick="switchTab('p2')">🤖 ২. অটোনোমাস মিশন কন্ট্রোল</button>
-        <button class="tab-btn" onclick="switchTab('p3')">🌐 ৩. সার্ভার ও কাস্টমার পোর্টাল</button>
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <!-- Left Sidebar / Canvas -->
+            <div class="canvas-area">
+                <canvas id="pcbCanvas"></canvas>
+                <div class="canvas-hint">গ্রিডে ট্যাপ করে পার্টস পজিশন সেট করুন</div>
+            </div>
+
+            <!-- Right Component Library Panel -->
+            <aside class="library-panel">
+                <h3><i class="fa-solid fa-layer-group"></i> পার্টস লাইব্রেরি (PCBA)</h3>
+                <div class="component-list">
+                    <div class="comp-card" data-type="ESP32-S3" data-lcsc="C2934560">
+                        <i class="fa-solid fa-memory comp-icon"></i>
+                        <div class="comp-info">
+                            <strong>ESP32-S3 Module</strong>
+                            <span>LCSC: C2934560</span>
+                        </div>
+                    </div>
+                    <div class="comp-card" data-type="RV1106" data-lcsc="C5123987">
+                        <i class="fa-solid fa-cpu comp-icon"></i>
+                        <div class="comp-info">
+                            <strong>RV1106 Processor</strong>
+                            <span>LCSC: C5123987</span>
+                        </div>
+                    </div>
+                    <div class="comp-card" data-type="ADS1115" data-lcsc="C37592">
+                        <i class="fa-solid fa-sliders comp-icon"></i>
+                        <div class="comp-info">
+                            <strong>ADS1115 ADC</strong>
+                            <span>LCSC: C37592</span>
+                        </div>
+                    </div>
+                    <div class="comp-card" data-type="TMC2209" data-lcsc="C483120">
+                        <i class="fa-solid fa-bolt comp-icon"></i>
+                        <div class="comp-info">
+                            <strong>TMC2209 Driver</strong>
+                            <span>LCSC: C483120</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
     </div>
-
-    <div class="container">
-
-        <!-- PANEL 1: ONE-CLICK MODE TOGGLE + RADAR -->
-        <div id="p1" class="panel active">
-            
-            <!-- Dynamic Mode Switcher Bar -->
-            <div class="mode-banner" id="modeBanner">
-                <div>
-                    <span style="color:var(--text-sub); font-size:13px;">বর্তমান ফ্লাইং স্টেট:</span>
-                    <div class="mode-status" id="modeText">🎮 MANUALLY CONTROLLED (JOYSTICK)</div>
-                </div>
-                <button class="toggle-btn" id="toggleBtn" onclick="toggleFlightMode()">এক চাপে অটোনোমাস অন করুন (Switch Auto)</button>
-            </div>
-
-            <div class="grid-3">
-                <div class="radar-box">
-                    <div class="radar-sweep"></div>
-                    <div class="drone-3d-icon" id="droneIcon"></div>
-                    <span style="position: absolute; bottom: 10px; left: 15px; font-size: 12px; color: var(--text-sub);">Radio Link: Active (915MHz)</span>
-                </div>
-
-                <div>
-                    <div class="metric-card">
-                        <small style="color:var(--text-sub);">উচ্চতা (Altitude)</small>
-                        <div class="metric-val" id="altDisplay">20.0 FT</div>
-                    </div>
-                    <div class="metric-card">
-                        <small style="color:var(--text-sub);">উইঞ্চ সুতার অবস্থা</small>
-                        <div class="metric-val" style="color:var(--accent-cyan);" id="winchDisplay">LOCKED</div>
-                    </div>
-                    <div class="metric-card">
-                        <small style="color:var(--text-sub);">জিপিএস স্থানাঙ্ক</small>
-                        <div class="metric-val" style="font-size:15px;">23.8103, 90.4125</div>
-                    </div>
-                </div>
-            </div>
-
-            <h3 style="margin-top: 20px;">🕹️ ম্যানুয়াল জয়স্টিক ও ওভাররাইড একশন</h3>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-cyan" onclick="sendRF('OWNER_CMD:HOVER')">২০ ফুট হোভার লক (Hover)</button>
-                <button class="btn btn-cyan" onclick="sendRF('OWNER_CMD:FORCE_DROP')">জরুরি উইঞ্চ রিলিজ</button>
-                <button class="btn btn-red" onclick="sendRF('OWNER_CMD:RTH')">RTH - অটো রিটার্ন হোম</button>
-            </div>
-        </div>
-
-        <!-- PANEL 2: AUTONOMOUS MISSION CONTROL -->
-        <div id="p2" class="panel">
-            <h2 style="color: var(--accent-green); margin-top:0;">🤖 অটোনোমাস মিশন প্ল্যানার</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div>
-                    <label>কাস্টমার ফোন:</label>
-                    <input type="text" id="custPhone" value="01712345678">
-                </div>
-                <div>
-                    <label>সিকিউরিটি ওটিপি (OTP):</label>
-                    <input type="text" id="custOTP" value="8452">
-                </div>
-                <div>
-                    <label>টার্গেট Lat:</label>
-                    <input type="text" id="targetLat" value="23.8103">
-                </div>
-                <div>
-                    <label>টার্গেট Lng:</label>
-                    <input type="text" id="targetLng" value="90.4125">
-                </div>
-            </div>
-            <button class="btn btn-cyan" style="margin-top:20px; background:var(--accent-green);" onclick="startAutoMission()">START AUTONOMOUS MISSION</button>
-        </div>
-
-        <!-- PANEL 3: CUSTOMER PORTAL -->
-        <div id="p3" class="panel">
-            <h2 style="text-align: center; color: var(--accent-cyan); margin-top:0;">🌐 সার্ভার ও লোকাল কাস্টমার পোর্টাল</h2>
-            <div style="background: #090e17; padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0;">
-                <p style="color: var(--accent-green); font-size: 18px; margin: 0;">● বিমান কাস্টমারের ২০ ফুট ওপরে অবস্থান করছে</p>
-            </div>
-            <div style="max-width: 400px; margin: 0 auto;">
-                <input type="text" id="inputOTP" placeholder="8452" style="font-size: 28px; text-align: center; letter-spacing: 8px;">
-                <button class="btn btn-cyan" style="background: var(--accent-green); font-size: 18px; margin-top: 15px;" onclick="unlockParcel()">UNLATCH & DROP PARCEL</button>
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-        let isAutonomousMode = false;
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        // এক চাপে মোড পরিবর্তন করার ফাংশন
-        function toggleFlightMode() {
-            isAutonomousMode = !isAutonomousMode;
-            let banner = document.getElementById('modeBanner');
-            let text = document.getElementById('modeText');
-            let btn = document.getElementById('toggleBtn');
-
-            if(isAutonomousMode) {
-                text.innerText = "🤖 AUTONOMOUS AUTO-PILOT ACTIVE";
-                text.style.color = "var(--accent-green)";
-                banner.style.borderColor = "var(--accent-green)";
-                btn.innerText = "এক চাপে ম্যানুয়াল মোডে ফিরুন (Take Control)";
-                btn.style.background = "var(--accent-cyan)";
-                sendRF("MODE_SWITCH:AUTONOMOUS");
-            } else {
-                text.innerText = "🎮 MANUALLY CONTROLLED (JOYSTICK)";
-                text.style.color = "var(--accent-orange)";
-                banner.style.borderColor = "var(--accent-orange)";
-                btn.innerText = "এক চাপে অটোনোমাস অন করুন (Switch Auto)";
-                btn.style.background = "var(--accent-orange)";
-                sendRF("MODE_SWITCH:MANUAL");
-            }
-        }
-
-        function sendRF(cmd) { alert("RF Signal Sent: " + cmd); }
-
-        function startAutoMission() {
-            alert("মিশন শুরু! অটোনোমাস মোড চালু করা হলো।");
-            if(!isAutonomousMode) toggleFlightMode();
-            switchTab('p1');
-        }
-
-        function unlockParcel() {
-            let otp = document.getElementById('inputOTP').value;
-            if(otp === "8452") alert("ওটিপি সঠিক! ২০ ফুট সুতা নেমে পার্সেল রিলিজ হচ্ছে...");
-            else alert("ভুল ওটিপি!");
-        }
-
-        setInterval(() => {
-            let icon = document.getElementById('droneIcon');
-            let x = (Math.random() - 0.5) * 50;
-            let y = (Math.random() - 0.5) * 50;
-            icon.style.transform = `translate(${x}px, ${y}px) rotate(${Math.random() * 360}deg)`;
-        }, 2000);
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
