@@ -2,70 +2,54 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Easy PCB Studio - JLCPCB Ready</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Easy PCB Studio - Pro Designer</title>
     <link rel="stylesheet" href="style.css">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Top Navigation Bar -->
-        <header class="top-bar">
-            <div class="logo">
-                <i class="fa-solid fa-microchip logo-icon"></i>
-                <span>Easy PCB <strong>STUDIO</strong></span>
-            </div>
-            <div class="actions">
-                <button id="clearBtn" class="btn btn-danger"><i class="fa-solid fa-trash"></i> মুছে ফেলুন</button>
-                <button id="exportJlcpcbBtn" class="btn btn-success"><i class="fa-solid fa-file-export"></i> JLCPCB PCBA Export</button>
-            </div>
-        </header>
 
-        <!-- Main Workspace -->
-        <main class="workspace">
-            <!-- Left Sidebar / Canvas -->
-            <div class="canvas-area">
-                <canvas id="pcbCanvas"></canvas>
-                <div class="canvas-hint">গ্রিডে ট্যাপ করে পার্টস পজিশন সেট করুন</div>
-            </div>
+    <!-- Top Header Navigation -->
+    <header>
+        <div class="logo">
+            <span class="icon">⚡</span> Easy PCB STUDIO
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-danger" onclick="clearCanvas()">🗑️ মুছে ফেলুন</button>
+            <button class="btn btn-success" onclick="exportGCode()">⚡ G-Code Export</button>
+            <button class="btn btn-primary" onclick="exportJLCPCB()">📦 JLCPCB Order</button>
+        </div>
+    </header>
 
-            <!-- Right Component Library Panel -->
-            <aside class="library-panel">
-                <h3><i class="fa-solid fa-layer-group"></i> পার্টস লাইব্রেরি (PCBA)</h3>
-                <div class="component-list">
-                    <div class="comp-card" data-type="ESP32-S3" data-lcsc="C2934560">
-                        <i class="fa-solid fa-memory comp-icon"></i>
-                        <div class="comp-info">
-                            <strong>ESP32-S3 Module</strong>
-                            <span>LCSC: C2934560</span>
-                        </div>
-                    </div>
-                    <div class="comp-card" data-type="RV1106" data-lcsc="C5123987">
-                        <i class="fa-solid fa-cpu comp-icon"></i>
-                        <div class="comp-info">
-                            <strong>RV1106 Processor</strong>
-                            <span>LCSC: C5123987</span>
-                        </div>
-                    </div>
-                    <div class="comp-card" data-type="ADS1115" data-lcsc="C37592">
-                        <i class="fa-solid fa-sliders comp-icon"></i>
-                        <div class="comp-info">
-                            <strong>ADS1115 ADC</strong>
-                            <span>LCSC: C37592</span>
-                        </div>
-                    </div>
-                    <div class="comp-card" data-type="TMC2209" data-lcsc="C483120">
-                        <i class="fa-solid fa-bolt comp-icon"></i>
-                        <div class="comp-info">
-                            <strong>TMC2209 Driver</strong>
-                            <span>LCSC: C483120</span>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-        </main>
+    <!-- Main Workspace -->
+    <div class="main-container">
+        <!-- Search & Quick Tools Bar -->
+        <div class="tool-bar">
+            <div class="search-box">
+                <input type="text" id="componentSearch" placeholder="🔍 সার্চ করুন (ESP32, Nano, OLED, Relay...)" oninput="searchComponents()">
+                <div id="searchResults" class="search-dropdown"></div>
+            </div>
+            <button class="tool-btn active" id="btn-wire" onclick="setTool('wire')">✏️ Wire</button>
+            <button class="tool-btn" id="btn-pad" onclick="setTool('pad')">🔴 Pad</button>
+        </div>
+
+        <!-- Interactive Canvas Area -->
+        <div class="canvas-wrapper">
+            <canvas id="pcbCanvas"></canvas>
+        </div>
+
+        <!-- Bottom Controls & Branding Panel -->
+        <div class="bottom-panel">
+            <div class="input-group">
+                <label>🏷️ ব্র্যান্ড/লোগো নাম:</label>
+                <input type="text" id="brandText" placeholder="আপনার ব্র্যান্ডের নাম লিখুন" oninput="draw()">
+            </div>
+            <div class="input-group">
+                <label>📏 ট্র্যাকিং থিকনেস (mm):</label>
+                <input type="number" id="traceWidth" value="3" min="1" max="10" onchange="draw()">
+            </div>
+        </div>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>
