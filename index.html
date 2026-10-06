@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Easy PCB Pro Studio - Multi-Layer & BGA Engine</title>
+    <title>Easy PCB Pro Studio</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -15,84 +15,42 @@
                 <i class="fa-solid fa-microchip logo-icon"></i>
                 <div class="brand-text">
                     <h1>Easy PCB <span>PRO</span></h1>
-                    <small>Offline Multi-Layer & BGA Studio</small>
-                </div>
-            </div>
-
-            <div class="toolbar">
-                <div class="control-group">
-                    <label><i class="fa-solid fa-layer-group"></i> Active Layer:</label>
-                    <select id="layerSelect">
-                        <option value="Top">Layer 1: Top Signal (Red)</option>
-                        <option value="Inner1">Layer 2: Inner GND (Plane)</option>
-                        <option value="Inner3">Layer 3: Inner PWR (Plane)</option>
-                        <option value="Bottom">Layer 4: Bottom Signal (Blue)</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label><i class="fa-solid fa-grid-2"></i> Grid Snap:</label>
-                    <select id="gridSelect">
-                        <option value="10">10 mil</option>
-                        <option value="25" selected>25 mil</option>
-                        <option value="50">50 mil</option>
-                    </select>
                 </div>
             </div>
 
             <div class="action-buttons">
-                <button id="autoRouteBtn" class="btn btn-warning"><i class="fa-solid fa-route"></i> Auto-Route</button>
-                <button id="drcCheckBtn" class="btn btn-info"><i class="fa-solid fa-shield-halved"></i> DRC Check</button>
+                <button id="autoRouteBtn" class="btn btn-warning"><i class="fa-solid fa-route"></i> Auto</button>
+                <button id="drcCheckBtn" class="btn btn-info"><i class="fa-solid fa-shield-halved"></i> DRC</button>
                 <button id="clearBtn" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Clear</button>
-                <button id="exportBtn" class="btn btn-success"><i class="fa-solid fa-file-export"></i> Export All (Gerber/BOM/CPL)</button>
             </div>
         </header>
 
         <!-- Main Workspace -->
         <main class="workspace">
-            <!-- Left Tool Menu -->
-            <aside class="tool-sidebar">
-                <button class="tool-btn active" title="Select Tool"><i class="fa-solid fa-arrow-pointer"></i></button>
-                <button class="tool-btn" title="Add Track / Wire"><i class="fa-solid fa-pen-nib"></i></button>
-                <button class="tool-btn" title="Add Via / Hole"><i class="fa-solid fa-circle-dot"></i></button>
-                <button class="tool-btn" title="Add Ground Pour (GND)"><i class="fa-solid fa-vector-square"></i></button>
-                <button class="tool-btn" title="Measure Distance"><i class="fa-solid fa-ruler-combined"></i></button>
-                <button class="tool-btn" title="3D Board Preview"><i class="fa-solid fa-cube"></i></button>
-            </aside>
-
             <!-- Center PCB Design Area -->
             <section class="canvas-wrapper">
                 <div class="canvas-header">
-                    <span id="coordDisplay"><i class="fa-solid fa-crosshairs"></i> X: 0.00 mm | Y: 0.00 mm</span>
-                    <span id="statusMessage"><i class="fa-solid fa-circle-check"></i> System Ready | Offline Mode</span>
+                    <span id="coordDisplay">X: 0.00 | Y: 0.00</span>
+                    <span id="statusMessage">Offline Mode</span>
                 </div>
                 <div class="canvas-container">
                     <canvas id="pcbCanvas"></canvas>
                 </div>
-                <div class="canvas-footer-info">
-                    <span><i class="fa-solid fa-circle-info"></i> টিপস: ডানপাশের লাইব্রেরি থেকে বিজিএ চিপ বা সেন্সর সিলেক্ট করে ক্যানভাসে ট্যাপ করুন।</span>
-                </div>
             </section>
 
-            <!-- Right Component & BGA Offline Library -->
+            <!-- Right/Bottom Component & BGA Offline Library -->
             <aside class="library-panel">
                 <div class="library-header">
-                    <h3><i class="fa-solid fa-boxes-stacked"></i> অফলাইন চিপস লাইব্রেরি</h3>
-                    <small>১ সেকেন্ডে সুপারফাস্ট সার্চ</small>
+                    <h3><i class="fa-solid fa-boxes-stacked"></i> পার্টস লাইব্রেরি</h3>
                 </div>
 
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="SoC, BGA বা সেন্সর টাইপ করুন..." oninput="searchComponent(this.value)">
+                    <input type="text" id="searchInput" placeholder="SoC, BGA বা সেন্সর সার্চ করুন..." oninput="searchComponent(this.value)">
                 </div>
 
                 <div class="component-list" id="componentList">
-                    <!-- JavaScript dynamically injects offline components here -->
-                </div>
-
-                <div class="ai-assistant-card">
-                    <h4><i class="fa-solid fa-robot"></i> এআই পিসিবি হেল্পার</h4>
-                    <p id="aiHintText">ক্যানভাসে একটি চিপ বসান, সিস্টেম অটোমেটিক পিন গাইডিং দেখাবে।</p>
+                    <!-- JavaScript Dynamically Loads Components Here -->
                 </div>
             </aside>
         </main>
