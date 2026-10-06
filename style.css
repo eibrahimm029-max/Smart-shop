@@ -1,192 +1,300 @@
+:root {
+    --bg-dark: #0a0f0d;
+    --panel-bg: #121a16;
+    --border-color: #1f2e27;
+    --accent-green: #00e676;
+    --accent-blue: #00e5ff;
+    --accent-orange: #ff9800;
+    --accent-red: #ff5252;
+    --text-main: #e0e6e3;
+    --text-muted: #80998c;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    user-select: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    background-color: #0f1419;
-    color: #ffffff;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    overflow: hidden;
+}
+
+.app-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    overflow: hidden;
 }
 
-/* Header UI */
-header {
-    background: #161b22;
-    padding: 10px 15px;
+/* Top Bar Styling */
+.top-bar {
+    background: var(--panel-bg);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #30363d;
+    padding: 8px 16px;
+    height: 60px;
 }
 
-.logo {
-    font-size: 16px;
-    font-weight: bold;
-    color: #00ffaa;
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 28px;
+    color: var(--accent-green);
+}
+
+.brand-text h1 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.brand-text h1 span {
+    color: var(--accent-green);
+}
+
+.brand-text small {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.toolbar {
+    display: flex;
+    gap: 16px;
+}
+
+.control-group {
     display: flex;
     align-items: center;
     gap: 6px;
-}
-
-.header-actions {
-    display: flex;
-    gap: 6px;
-}
-
-.btn {
-    padding: 8px 12px;
-    border: none;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-warning { background: #d97706; color: #fff; }
-.btn-danger { background: #e63946; color: #fff; }
-.btn-success { background: #00ffaa; color: #000; }
-.btn-primary { background: #00a8ff; color: #fff; }
-
-/* Workspace Layout */
-.main-container {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-}
-
-/* EasyEDA Style Search ToolBar */
-.tool-bar {
-    background: #161b22;
-    padding: 8px 12px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    border-bottom: 1px solid #30363d;
-}
-
-.search-box {
-    position: relative;
-    flex: 1;
-}
-
-.search-box input {
-    width: 100%;
-    background: #0d1117;
-    border: 1px solid #30363d;
-    color: #00ffaa;
-    padding: 8px 12px;
-    border-radius: 6px;
     font-size: 12px;
+}
+
+select {
+    background: #1a2620;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 4px 8px;
+    border-radius: 4px;
     outline: none;
 }
 
-.search-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 6px;
-    max-height: 250px;
-    overflow-y: auto;
-    z-index: 100;
-    display: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}
-
-.search-item {
-    padding: 10px 12px;
-    font-size: 12px;
-    color: #c9d1d9;
-    cursor: pointer;
-    border-bottom: 1px solid #21262d;
+.action-buttons {
     display: flex;
-    justify-content: space-between;
+    gap: 8px;
 }
 
-.search-item:hover {
-    background: #21262d;
-    color: #00ffaa;
+.btn {
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.search-item.ready-made-board {
-    background: #1f2937;
-    border-left: 3px solid #00ffaa;
+.btn-warning { background: var(--accent-orange); color: #000; }
+.btn-info { background: var(--accent-blue); color: #000; }
+.btn-danger { background: var(--accent-red); color: #fff; }
+.btn-success { background: var(--accent-green); color: #000; }
+
+.btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* Main Workspace */
+.workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
 }
 
-.search-item.ready-made-board:hover {
-    background: #374151;
-    color: #00ffaa;
+/* Left Sidebar Tools */
+.tool-sidebar {
+    width: 50px;
+    background: var(--panel-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 12px;
+    gap: 12px;
 }
 
 .tool-btn {
-    background: #21262d;
-    border: 1px solid #30363d;
-    color: #c9d1d9;
-    padding: 8px 12px;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
     border-radius: 6px;
-    font-size: 12px;
     cursor: pointer;
-    white-space: nowrap;
 }
 
-.tool-btn.active {
-    background: #00ffaa;
-    color: #000;
-    border-color: #00ffaa;
+.tool-btn:hover, .tool-btn.active {
+    background: #1a2620;
+    color: var(--accent-green);
+    border-color: var(--accent-green);
 }
 
-/* Canvas Display */
+/* Canvas Area */
 .canvas-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #050806;
+}
+
+.canvas-header {
+    background: #0d1410;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.canvas-container {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #05080c;
+    position: relative;
 }
 
 canvas {
-    background: #090d12;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
-    border: 1px solid #1f2937;
-    touch-action: none;
+    background: #080d0a;
+    border: 1px solid #1a2921;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    cursor: crosshair;
 }
 
-/* Bottom Control Panel */
-.bottom-panel {
-    background: #161b22;
-    padding: 10px 15px;
-    display: flex;
-    gap: 12px;
-    border-top: 1px solid #30363d;
+.canvas-footer-info {
+    padding: 6px 12px;
+    font-size: 11px;
+    background: #0d1410;
+    color: var(--accent-green);
+    border-top: 1px solid var(--border-color);
 }
 
-.input-group {
-    flex: 1;
+/* Right Component Library */
+.library-panel {
+    width: 300px;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    padding: 12px;
+    gap: 12px;
 }
 
-.input-group label {
-    font-size: 11px;
-    color: #8b949e;
+.library-header h3 {
+    font-size: 14px;
 }
 
-.input-group input {
-    background: #0d1117;
-    border: 1px solid #30363d;
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 4px;
+.library-header small {
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    color: var(--text-muted);
     font-size: 12px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 8px 8px 8px 30px;
+    background: #1a2620;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-main);
+    font-size: 12px;
+    outline: none;
+}
+
+.component-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.comp-card {
+    background: #16211c;
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.comp-card:hover, .comp-card.selected {
+    border-color: var(--accent-green);
+    background: #1c2c25;
+}
+
+.comp-icon {
+    font-size: 20px;
+    color: var(--accent-green);
+}
+
+.comp-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.comp-info strong {
+    font-size: 12px;
+}
+
+.comp-info span {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.bga-badge {
+    color: var(--accent-orange);
+    font-weight: bold;
+    font-size: 10px;
+}
+
+.ai-assistant-card {
+    background: #18221c;
+    border: 1px dashed var(--accent-green);
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.ai-assistant-card h4 {
+    font-size: 12px;
+    color: var(--accent-green);
+    margin-bottom: 4px;
+}
+
+.ai-assistant-card p {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.3;
 }
