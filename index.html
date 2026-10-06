@@ -2,63 +2,102 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Easy PCB Studio - Pro Designer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy PCB Pro Studio - Multi-Layer & BGA Engine</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-
-    <!-- Header Navigation -->
-    <header>
-        <div class="logo">
-            <span class="icon">⚡</span> Easy PCB STUDIO
-        </div>
-        <div class="header-actions">
-            <button class="btn btn-warning" onclick="undoLast()">↩️ আন্ডু (Undo)</button>
-            <button class="btn btn-danger" onclick="clearCanvas()">🗑️ সব সাফ করুন</button>
-            <button class="btn btn-primary" onclick="saveDesignToLibrary()">⭐ লাইব্রেরিতে সেভ করুন</button>
-            <button class="btn btn-success" onclick="exportGCode()">⚡ G-Code Download</button>
-            <button class="btn btn-primary" onclick="exportJLCPCB()">📦 Gerber ZIP Export</button>
-        </div>
-    </header>
-
-    <!-- Main Workspace -->
-    <div class="main-container">
-        <!-- Live Open EDA Library Search ToolBar -->
-        <div class="tool-bar">
-            <div class="search-box">
-                <input type="text" id="componentSearch" placeholder="🔍 ইনস্ট্যান্ট পার্টস সার্চ (ESP32, Relay, OLED, Resistor, Nano)..." oninput="searchComponents()">
-                <div id="searchResults" class="search-dropdown"></div>
+    <div class="app-container">
+        <!-- Top Navigation Bar -->
+        <header class="top-bar">
+            <div class="brand">
+                <i class="fa-solid fa-microchip logo-icon"></i>
+                <div class="brand-text">
+                    <h1>Easy PCB <span>PRO</span></h1>
+                    <small>Offline Multi-Layer & BGA Studio</small>
+                </div>
             </div>
-            <button class="tool-btn active" id="btn-wire" onclick="setTool('wire')">✏️ Wire</button>
-            <button class="tool-btn" id="btn-pad" onclick="setTool('pad')">🔴 Pad</button>
-            <button class="tool-btn" id="btn-select" onclick="setTool('select')">🖐️ Move/Select</button>
-        </div>
 
-        <!-- Canvas Area -->
-        <div class="canvas-wrapper">
-            <canvas id="pcbCanvas"></canvas>
-        </div>
+            <div class="toolbar">
+                <div class="control-group">
+                    <label><i class="fa-solid fa-layer-group"></i> Active Layer:</label>
+                    <select id="layerSelect">
+                        <option value="Top">Layer 1: Top Signal (Red)</option>
+                        <option value="Inner1">Layer 2: Inner GND (Plane)</option>
+                        <option value="Inner3">Layer 3: Inner PWR (Plane)</option>
+                        <option value="Bottom">Layer 4: Bottom Signal (Blue)</option>
+                    </select>
+                </div>
 
-        <!-- Bottom Controls Panel -->
-        <div class="bottom-panel">
-            <div class="input-group">
-                <label>🏷️️ প্রজেক্ট/ফাইল নাম:</label>
-                <input type="text" id="projectName" value="My_PCB_Design" placeholder="ফাইলের নাম লিখুন">
+                <div class="control-group">
+                    <label><i class="fa-solid fa-grid-2"></i> Grid Snap:</label>
+                    <select id="gridSelect">
+                        <option value="10">10 mil</option>
+                        <option value="25" selected>25 mil</option>
+                        <option value="50">50 mil</option>
+                    </select>
+                </div>
             </div>
-            <div class="input-group">
-                <label>🏷️ কাস্টম লোগো/টেক্সট:</label>
-                <input type="text" id="brandText" placeholder="বোর্ডে লেখার নাম" oninput="draw()">
+
+            <div class="action-buttons">
+                <button id="autoRouteBtn" class="btn btn-warning"><i class="fa-solid fa-route"></i> Auto-Route</button>
+                <button id="drcCheckBtn" class="btn btn-info"><i class="fa-solid fa-shield-halved"></i> DRC Check</button>
+                <button id="clearBtn" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Clear</button>
+                <button id="exportBtn" class="btn btn-success"><i class="fa-solid fa-file-export"></i> Export All (Gerber/BOM/CPL)</button>
             </div>
-            <div class="input-group">
-                <label>📏 ট্র্যাকিং থিকনেস (mm):</label>
-                <input type="number" id="traceWidth" value="3" min="1" max="10" onchange="draw()">
-            </div>
-        </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <!-- Left Tool Menu -->
+            <aside class="tool-sidebar">
+                <button class="tool-btn active" title="Select Tool"><i class="fa-solid fa-arrow-pointer"></i></button>
+                <button class="tool-btn" title="Add Track / Wire"><i class="fa-solid fa-pen-nib"></i></button>
+                <button class="tool-btn" title="Add Via / Hole"><i class="fa-solid fa-circle-dot"></i></button>
+                <button class="tool-btn" title="Add Ground Pour (GND)"><i class="fa-solid fa-vector-square"></i></button>
+                <button class="tool-btn" title="Measure Distance"><i class="fa-solid fa-ruler-combined"></i></button>
+                <button class="tool-btn" title="3D Board Preview"><i class="fa-solid fa-cube"></i></button>
+            </aside>
+
+            <!-- Center PCB Design Area -->
+            <section class="canvas-wrapper">
+                <div class="canvas-header">
+                    <span id="coordDisplay"><i class="fa-solid fa-crosshairs"></i> X: 0.00 mm | Y: 0.00 mm</span>
+                    <span id="statusMessage"><i class="fa-solid fa-circle-check"></i> System Ready | Offline Mode</span>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="pcbCanvas"></canvas>
+                </div>
+                <div class="canvas-footer-info">
+                    <span><i class="fa-solid fa-circle-info"></i> টিপস: ডানপাশের লাইব্রেরি থেকে বিজিএ চিপ বা সেন্সর সিলেক্ট করে ক্যানভাসে ট্যাপ করুন।</span>
+                </div>
+            </section>
+
+            <!-- Right Component & BGA Offline Library -->
+            <aside class="library-panel">
+                <div class="library-header">
+                    <h3><i class="fa-solid fa-boxes-stacked"></i> অফলাইন চিপস লাইব্রেরি</h3>
+                    <small>১ সেকেন্ডে সুপারফাস্ট সার্চ</small>
+                </div>
+
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="SoC, BGA বা সেন্সর টাইপ করুন..." oninput="searchComponent(this.value)">
+                </div>
+
+                <div class="component-list" id="componentList">
+                    <!-- JavaScript dynamically injects offline components here -->
+                </div>
+
+                <div class="ai-assistant-card">
+                    <h4><i class="fa-solid fa-robot"></i> এআই পিসিবি হেল্পার</h4>
+                    <p id="aiHintText">ক্যানভাসে একটি চিপ বসান, সিস্টেম অটোমেটিক পিন গাইডিং দেখাবে।</p>
+                </div>
+            </aside>
+        </main>
     </div>
 
-    <!-- JSZip Library for Client-side Gerber ZIP Generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
