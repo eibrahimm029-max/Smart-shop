@@ -3,57 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Easy PCB Pro Studio</title>
+    <title>Easy PCB Pro Studio - Auto Router Engine</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Top Navigation Bar -->
+    <div class="mobile-layout">
+        <!-- Top Navigation -->
         <header class="top-bar">
             <div class="brand">
                 <i class="fa-solid fa-microchip logo-icon"></i>
-                <div class="brand-text">
-                    <h1>Easy PCB <span>PRO</span></h1>
-                </div>
+                <span>Easy PCB <strong>PRO</strong></span>
             </div>
-
             <div class="action-buttons">
-                <button id="autoRouteBtn" class="btn btn-warning"><i class="fa-solid fa-route"></i> Auto</button>
-                <button id="drcCheckBtn" class="btn btn-info"><i class="fa-solid fa-shield-halved"></i> DRC</button>
+                <button id="autoRouteBtn" class="btn btn-warning"><i class="fa-solid fa-route"></i> Auto-Route</button>
+                <button id="drcCheckBtn" class="btn btn-info"><i class="fa-solid fa-shield-halved"></i> DRC Check</button>
                 <button id="clearBtn" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Clear</button>
             </div>
         </header>
 
-        <!-- Main Workspace -->
-        <main class="workspace">
-            <!-- Center PCB Design Area -->
-            <section class="canvas-wrapper">
-                <div class="canvas-header">
-                    <span id="coordDisplay">X: 0.00 | Y: 0.00</span>
-                    <span id="statusMessage">Offline Mode</span>
-                </div>
-                <div class="canvas-container">
-                    <canvas id="pcbCanvas"></canvas>
-                </div>
-            </section>
+        <!-- Canvas PCB Area -->
+        <section class="canvas-wrapper">
+            <div class="canvas-header">
+                <span id="coordDisplay">X: 0.00 | Y: 0.00</span>
+                <span id="statusMessage">Pin-to-Pin Auto Netlist Ready</span>
+            </div>
+            <div class="canvas-container">
+                <canvas id="pcbCanvas"></canvas>
+            </div>
+        </section>
 
-            <!-- Right/Bottom Component & BGA Offline Library -->
-            <aside class="library-panel">
-                <div class="library-header">
-                    <h3><i class="fa-solid fa-boxes-stacked"></i> পার্টস লাইব্রেরি</h3>
-                </div>
-
+        <!-- Dynamic Category & Search Library -->
+        <aside class="library-panel">
+            <div class="library-header">
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="SoC, BGA বা সেন্সর সার্চ করুন..." oninput="searchComponent(this.value)">
+                    <input type="text" id="searchInput" placeholder="হাজার হাজার চিপস, প্রসেসর বা পিন হেডার সার্চ করুন..." oninput="searchComponent(this.value)">
                 </div>
-
-                <div class="component-list" id="componentList">
-                    <!-- JavaScript Dynamically Loads Components Here -->
+                <div class="category-tabs">
+                    <button class="tab-btn active" onclick="filterCategory('All')">All</button>
+                    <button class="tab-btn" onclick="filterCategory('MCU/SoC')">MCU/SoC</button>
+                    <button class="tab-btn" onclick="filterCategory('Sensor')">Sensors</button>
+                    <button class="tab-btn" onclick="filterCategory('Connector')">Headers/Output</button>
+                    <button class="tab-btn" onclick="filterCategory('Passive')">Passive</button>
                 </div>
-            </aside>
-        </main>
+            </div>
+            
+            <div class="component-list" id="componentList">
+                <!-- Javascript will load parts here -->
+            </div>
+        </aside>
     </div>
 
     <script src="app.js"></script>
