@@ -2,36 +2,36 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
-    background-color: #0a0f0d;
+    background-color: #060908;
     color: #e0e6e3;
     overflow: hidden;
 }
 
-.mobile-layout {
+.app-layout {
     display: flex;
     flex-direction: column;
     height: 100vh;
 }
 
 .top-bar {
-    background: #121a16;
-    border-bottom: 1px solid #1f2e27;
+    background: #0f1713;
+    border-bottom: 1px solid #1a2921;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 6px 10px;
-    height: 48px;
+    height: 50px;
 }
 
 .brand {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 14px;
+    font-size: 13px;
     color: #00e676;
 }
 
@@ -42,30 +42,35 @@ body {
 
 .btn {
     border: none;
-    padding: 5px 8px;
+    padding: 6px 10px;
     border-radius: 4px;
     font-weight: bold;
     font-size: 10px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
+.btn-purple { background: #7c4dff; color: #fff; }
+.btn-blue { background: #00b0ff; color: #fff; }
 .btn-warning { background: #ff9800; color: #000; }
-.btn-info { background: #00e5ff; color: #000; }
+.btn-success { background: #00e676; color: #000; }
 .btn-danger { background: #ff5252; color: #fff; }
 
 .canvas-wrapper {
-    height: 45vh;
-    background: #050806;
+    height: 42vh;
+    background: #030504;
     display: flex;
     flex-direction: column;
-    border-bottom: 2px solid #1f2e27;
+    border-bottom: 1px solid #1a2921;
 }
 
 .canvas-header {
-    background: #0d1410;
-    padding: 4px 8px;
+    background: #0a120e;
+    padding: 4px 10px;
     font-size: 10px;
-    color: #80998c;
+    color: #00e5ff;
     display: flex;
     justify-content: space-between;
 }
@@ -79,13 +84,48 @@ body {
 }
 
 canvas {
-    background: #080d0a;
-    border: 1px solid #1a2921;
+    background: #08120c;
+    border: 2px solid #00e676;
+    box-shadow: 0 0 15px rgba(0,230,118,0.1);
+}
+
+.customization-bar {
+    background: #0d1712;
+    padding: 6px 10px;
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid #1a2921;
+}
+
+.input-group {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #14241c;
+    border: 1px solid #1f3629;
+    border-radius: 4px;
+    padding: 0 8px;
+    gap: 6px;
+}
+
+.input-group i {
+    color: #00e676;
+    font-size: 11px;
+}
+
+.input-group input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 11px;
+    padding: 5px 0;
+    outline: none;
 }
 
 .library-panel {
     flex: 1;
-    background: #121a16;
+    background: #0f1713;
     display: flex;
     flex-direction: column;
     padding: 8px;
@@ -108,37 +148,13 @@ canvas {
 
 .search-box input {
     width: 100%;
-    padding: 6px 6px 6px 28px;
-    background: #1a2620;
-    border: 1px solid #1f2e27;
+    padding: 7px 8px 7px 28px;
+    background: #14241c;
+    border: 1px solid #1f3629;
     border-radius: 4px;
     color: #fff;
-    font-size: 12px;
+    font-size: 11px;
     outline: none;
-}
-
-.category-tabs {
-    display: flex;
-    gap: 4px;
-    margin-top: 6px;
-    overflow-x: auto;
-}
-
-.tab-btn {
-    background: #1a2620;
-    border: 1px solid #1f2e27;
-    color: #80998c;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.tab-btn.active {
-    background: #00e676;
-    color: #000;
-    font-weight: bold;
 }
 
 .component-list {
@@ -150,29 +166,25 @@ canvas {
 }
 
 .comp-card {
-    background: #16211c;
-    border: 1px solid #1f2e27;
+    background: #14221a;
+    border: 1px solid #1d3327;
     padding: 8px;
     border-radius: 4px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
 }
 
 .comp-card.selected {
     border-color: #00e676;
-    background: #1c2c25;
-}
-
-.comp-icon {
-    font-size: 16px;
-    color: #00e676;
+    background: #1b3025;
 }
 
 .comp-info strong {
     font-size: 11px;
     display: block;
+    color: #00e676;
 }
 
 .comp-info span {
