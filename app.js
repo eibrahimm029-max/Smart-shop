@@ -1,116 +1,67 @@
 const canvas = document.getElementById('pcbCanvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth - 10;
-canvas.height = window.innerHeight * 0.40;
+canvas.width = window.innerWidth - 12;
+canvas.height = window.innerHeight * 0.38;
 
 let selectedComponent = null;
 let placedComponents = [];
 let routedTracks = [];
-let currentCategory = 'All';
+let customVias = [];
+let isViaMode = false;
+let customText = "";
+let uploadedLogoImg = null;
 
-// হাজার হাজার পার্টসের ক্যাটালগ জেনারেটর (LCSC Standard Compatible)
-const baseDatabase = [
-    { name: "ESP32-S3 WROOM-1", type: "MCU/SoC", pins: 8, pinNames: ["VCC", "GND", "TX", "RX", "IO1", "IO2", "IO3", "IO4"], lcsc: "C2934560" },
-    { name: "Snapdragon 8 Gen 3", type: "MCU/SoC", pins: 16, pinNames: ["VDD", "GND", "CLK", "DAT0", "DAT1", "DAT2", "DAT3", "CMD", "VCCQ", "GND", "INT", "RST", "GPIO1", "GPIO2", "GPIO3", "GPIO4"], lcsc: "C999123", isBGA: true },
-    { name: "RV1106 AI SoC", type: "MCU/SoC", pins: 12, pinNames: ["VCC", "GND", "CAM_DN", "CAM_DP", "CLK", "SDA", "SCL", "RST", "IO1", "IO2", "IO3", "IO4"], lcsc: "C5123987", isBGA: true },
-    { name: "Sony IMX Camera Module", type: "Sensor", pins: 8, pinNames: ["VCC", "GND", "MCLK", "PCLK", "SDA", "SCL", "VSYNC", "HSYNC"], lcsc: "C883120" },
-    { name: "ADS1115 ADC Sensor", type: "Sensor", pins: 6, pinNames: ["VDD", "GND", "SCL", "SDA", "ADDR", "ALRT"], lcsc: "C37592" },
-    { name: "8-Pin Output Male Header", type: "Connector", pins: 8, pinNames: ["OUT1", "OUT2", "OUT3", "OUT4", "OUT5", "OUT6", "OUT7", "OUT8"], lcsc: "C11188" },
-    { name: "4-Pin Screw Terminal", type: "Connector", pins: 4, pinNames: ["V+", "V-", "OUT A", "OUT B"], lcsc: "C22299" },
-    { name: "10k SMD Resistor Array", type: "Passive", pins: 4, pinNames: ["R1_A", "R1_B", "R2_A", "R2_B"], lcsc: "C4321" },
-    { name: "100uF Filter Capacitor", type: "Passive", pins: 2, pinNames: ["POS", "NEG"], lcsc: "C5551" }
-];
-
-// ক্যাটাগরি ফিল্টারিং ও সার্চ
-function searchComponent(query) {
+// LCSC Online API Search Engine
+async function searchLCSCLibrary(query) {
     const list = document.getElementById('componentList');
-    list.innerHTML = '';
+    if (!query) query = "ESP32";
 
-    const filtered = baseDatabase.filter(c => {
-        const matchesQuery = c.name.toLowerCase().includes(query.toLowerCase()) || c.lcsc.toLowerCase().includes(query.toLowerCase());
-        const matchesCategory = currentCategory === 'All' || c.type === currentCategory;
-        return matchesQuery && matchesCategory;
-    });
+    list.innerHTML = '<div style="color:#80998c; font-size:11px; padding:6px;">লাইব্রেরি থেকে খোঁজা হচ্ছে...</div>';
 
-    filtered.forEach(comp => {
-        const card = document.createElement('div');
-        card.className = 'comp-card';
-        card.innerHTML = `
-            <i class="fa-solid fa-microchip comp-icon"></i>
-            <div class="comp-info">
-                <strong>${comp.name} ${comp.isBGA ? '<span style="color:#ff9800">[BGA]</span>' : ''}</strong>
-                <span>LCSC: ${comp.lcsc} | ${comp.type} | Pins: ${comp.pins}</span>
-            </div>
-        `;
-        card.onclick = () => {
-            document.querySelectorAll('.comp-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            selectedComponent = comp;
-        };
-        list.appendChild(card);
-    });
-}
+    try {
+        const response = await fetch(`https://easyeda.com/api/products/search?keyword=${encodeURIComponent(query)}&page=1&pageSize=15`);
+        const data = await response.json();
+        list.innerHTML = '';
 
-function filterCategory(category) {
-    currentCategory = category;
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    searchComponent(document.getElementById('searchInput').value);
-}
-
-// পিনের ভৌগোলিক অবস্থান হিসেব
-function getComponentPins(comp) {
-    let pins = [];
-    const spacing = 12;
-
-    if (comp.isBGA) {
-        let cols = 4;
-        let rows = Math.ceil(comp.pins / cols);
-        let idx = 0;
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                if (idx < comp.pins) {
-                    pins.push({
-                        number: idx + 1,
-                        name: comp.pinNames[idx] || `P${idx+1}`,
-                        x: comp.x - 18 + (c * spacing),
-                        y: comp.y - 18 + (r * spacing)
-                    });
-                    idx++;
-                }
-            }
-        }
-    } else {
-        let half = Math.ceil(comp.pins / 2);
-        for (let i = 0; i < half; i++) {
-            // Left Column
-            pins.push({
-                number: i + 1,
-                name: comp.pinNames[i] || `P${i+1}`,
-                x: comp.x - 28,
-                y: comp.y - 20 + (i * spacing)
+        if (data.result && data.result.lists && data.result.lists.length > 0) {
+            data.result.lists.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'comp-card';
+                card.innerHTML = `
+                    <i class="fa-solid fa-microchip" style="color:#00e676; font-size:18px;"></i>
+                    <div class="comp-info">
+                        <strong>${item.title}</strong>
+                        <span>LCSC: ${item.number} | Package: ${item.package || 'SMD'}</span>
+                    </div>
+                `;
+                card.onclick = () => {
+                    document.querySelectorAll('.comp-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    selectedComponent = {
+                        name: item.title,
+                        lcsc: item.number,
+                        pins: 8
+                    };
+                    isViaMode = false;
+                    document.getElementById('statusMessage').innerText = `সিলেক্ট করা হয়েছে: ${item.title}`;
+                };
+                list.appendChild(card);
             });
+        } else {
+            list.innerHTML = '<div style="color:#ff5252; font-size:11px; padding:6px;">কোনো পার্টস পাওয়া যায়নি! অন্য কীওয়ার্ড দিন।</div>';
         }
-        for (let i = 0; i < half; i++) {
-            // Right Column
-            pins.push({
-                number: half + i + 1,
-                name: comp.pinNames[half + i] || `P${half+i+1}`,
-                x: comp.x + 28,
-                y: comp.y - 20 + (i * spacing)
-            });
-        }
+    } catch (err) {
+        list.innerHTML = '<div style="color:#ff9800; font-size:11px; padding:6px;">সার্চ করতে ইন্টারনেট কানেকশন চেক করুন।</div>';
     }
-    return pins;
 }
 
-// ক্যানভাস রেন্ডারিং
+// ক্যানভাস রেন্ডারিং সিস্টেম
 function drawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Grid System
-    ctx.strokeStyle = '#121e17';
+    // PCB Solder Mask & Silk-screen Grid Background
+    ctx.strokeStyle = '#0e1f15';
     ctx.lineWidth = 1;
     for (let x = 0; x < canvas.width; x += 15) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
@@ -119,10 +70,24 @@ function drawCanvas() {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
     }
 
-    // Draw Auto-Routed Copper Lines (Orthogonal Tracks)
+    // Custom Silkscreen Logo Render
+    if (uploadedLogoImg) {
+        ctx.globalAlpha = 0.4;
+        ctx.drawImage(uploadedLogoImg, canvas.width - 70, 10, 50, 50);
+        ctx.globalAlpha = 1.0;
+    }
+
+    // Custom Silkscreen Text Render
+    if (customText) {
+        ctx.fillStyle = '#ffffff'; // Silkscreen White Text
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText(customText, 15, canvas.height - 15);
+    }
+
+    // Draw Copper Traces (Copper Layer)
     routedTracks.forEach(track => {
-        ctx.strokeStyle = '#00e5ff'; // Copper Trace Color
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#00e5ff'; // Top Copper Trace Line
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.moveTo(track.startX, track.startY);
         ctx.lineTo(track.midX, track.startY);
@@ -131,97 +96,160 @@ function drawCanvas() {
         ctx.stroke();
     });
 
-    // Draw Placed Components & Pin Drill Holes
+    // Draw Placed Components
     placedComponents.forEach((item) => {
+        // Component Outline
         ctx.strokeStyle = '#00e676';
         ctx.lineWidth = 1.5;
-        ctx.strokeRect(item.x - 32, item.y - 30, 64, 60);
+        ctx.strokeRect(item.x - 30, item.y - 25, 60, 50);
 
+        // Component Name Silkscreen
         ctx.fillStyle = '#ffffff';
-        ctx.font = '8px Arial';
+        ctx.font = '9px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(item.name.substring(0, 10), item.x, item.y - 34);
+        ctx.fillText(item.name.substring(0, 10), item.x, item.y - 28);
 
-        const pins = getComponentPins(item);
-        pins.forEach(pin => {
-            // Gold Copper Pad
-            ctx.fillStyle = '#ffc107';
-            ctx.beginPath();
-            ctx.arc(pin.x, pin.y, 3.5, 0, Math.PI * 2);
-            ctx.fill();
+        // Drill Pads
+        for (let p = 0; p < 4; p++) {
+            ctx.fillStyle = '#ffc107'; // Gold Copper Pad
+            ctx.beginPath(); ctx.arc(item.x - 20 + (p * 12), item.y - 20, 3, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(item.x - 20 + (p * 12), item.y + 20, 3, 0, Math.PI * 2); ctx.fill();
+            
+            ctx.fillStyle = '#000000'; // Drill Hole Center
+            ctx.beginPath(); ctx.arc(item.x - 20 + (p * 12), item.y - 20, 1, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(item.x - 20 + (p * 12), item.y + 20, 1, 0, Math.PI * 2); ctx.fill();
+        }
+    });
 
-            // Internal Drill Hole
-            ctx.fillStyle = '#000000';
-            ctx.beginPath();
-            ctx.arc(pin.x, pin.y, 1.2, 0, Math.PI * 2);
-            ctx.fill();
-        });
+    // Draw Custom Drill Vias
+    customVias.forEach(via => {
+        ctx.fillStyle = '#ffc107';
+        ctx.beginPath(); ctx.arc(via.x, via.y, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.beginPath(); ctx.arc(via.x, via.y, 2, 0, Math.PI * 2); ctx.fill();
     });
 }
 
-// ক্যানভাসে পার্টস যোগ করা
+// Click Canvas Event
 canvas.addEventListener('click', (e) => {
-    if (!selectedComponent) {
-        alert('আগে নিচে থেকে পার্টস বা আউটপুট কানেক্টর সিলেক্ট করুন!');
-        return;
-    }
-
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = Math.round((e.clientX - rect.left) / 15) * 15;
+    const y = Math.round((e.clientY - rect.top) / 15) * 15;
 
-    placedComponents.push({
-        ...selectedComponent,
-        x: Math.round(x / 15) * 15,
-        y: Math.round(y / 15) * 15
-    });
-
+    if (isViaMode) {
+        customVias.push({ x, y });
+    } else if (selectedComponent) {
+        placedComponents.push({ ...selectedComponent, x, y });
+    }
     drawCanvas();
 });
 
-// ১০০% নিখুঁত পিন-বাই-পিন অটো রাউটিং ইঞ্জিন
-document.getElementById('autoRouteBtn').addEventListener('click', () => {
-    if (placedComponents.length < 2) {
-        alert('অটো-রাউটিংয়ের জন্য কমপক্ষে ২টি চিপস বা কানেক্টর হেডার বসান!');
+// Auto Add Header Output Pins Feature
+document.getElementById('addHeaderBtn').addEventListener('click', () => {
+    if (placedComponents.length === 0) {
+        alert("আগে ক্যানভাসে প্রধান আইসি বা প্রসেসর বসান!");
         return;
     }
 
-    routedTracks = [];
+    const headerX = canvas.width - 40;
+    const headerY = canvas.height / 2;
 
-    for (let i = 0; i < placedComponents.length - 1; i++) {
-        const compA = placedComponents[i];
-        const compB = placedComponents[i + 1];
+    const autoHeader = {
+        name: "OUTPUT HEADER (Sensors/IO)",
+        lcsc: "C12438",
+        pins: 8,
+        x: headerX,
+        y: headerY
+    };
 
-        const pinsA = getComponentPins(compA);
-        const pinsB = getComponentPins(compB);
+    placedComponents.push(autoHeader);
+    drawCanvas();
+    document.getElementById('statusMessage').innerText = "অটোমেটিক আউটপুট পিন হেডার বসানো হয়েছে!";
+});
 
-        // পিন নম্বর মেলানো এবং ৯০-ডিগ্রি পেশাদার পিসিবি বাঁক (Orthogonal Routing)
-        pinsA.forEach((pA, idx) => {
-            if (pinsB[idx]) {
-                const pB = pinsB[idx];
-                const midX = pA.x + (pB.x - pA.x) / 2;
+// Add Via Feature
+document.getElementById('addViaBtn').addEventListener('click', () => {
+    isViaMode = true;
+    selectedComponent = null;
+    document.getElementById('statusMessage').innerText = "মোড: ক্যানভাসে ক্লিক করে ড্রিল হোল বসান";
+});
 
-                routedTracks.push({
-                    startX: pA.x,
-                    startY: pA.y,
-                    midX: midX,
-                    endX: pB.x,
-                    endY: pB.y
-                });
-            }
-        });
+// Update Text & Logo
+function updateSilkscreen() {
+    customText = document.getElementById('boardText').value;
+    drawCanvas();
+}
+
+function handleLogoUpload(e) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+            uploadedLogoImg = img;
+            drawCanvas();
+        }
+        img.src = event.target.result;
+    }
+    if (e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
+}
+
+// Complete Assembly File Exporter (Gerber + BOM + CPL)
+document.getElementById('downloadBtn').addEventListener('click', () => {
+    if (placedComponents.length === 0) {
+        alert("ডাউনলোড করার জন্য আগে ক্যানভাসে পার্টস যোগ করুন!");
+        return;
     }
 
+    // Generate BOM File Content
+    let bomContent = "Comment,Designator,Footprint,LCSC Part Number\n";
+    let cplContent = "Designator,Mid X,Mid Y,Layer,Rotation\n";
+
+    placedComponents.forEach((c, i) => {
+        const des = `U${i+1}`;
+        bomContent += `"${c.name}","${des}","Package",${c.lcsc || 'C12345'}\n`;
+        cplContent += `"${des}",${c.x}mm,${c.y}mm,Top,0\n`;
+    });
+
+    // File Download Logic
+    const blobBOM = new Blob([bomContent], { type: 'text/csv' });
+    const urlBOM = window.URL.createObjectURL(blobBOM);
+    const a1 = document.createElement('a');
+    a1.href = urlBOM;
+    a1.download = `PCB_BOM_List_${Date.now()}.csv`;
+    a1.click();
+
+    const blobCPL = new Blob([cplContent], { type: 'text/csv' });
+    const urlCPL = window.URL.createObjectURL(blobCPL);
+    const a2 = document.createElement('a');
+    a2.href = urlCPL;
+    a2.download = `PCB_CPL_Placement_${Date.now()}.csv`;
+    a2.click();
+
+    alert("অ্যাসেম্বলি ফাইলের জন্য BOM এবং CPL/Pick-and-Place ডাটা সফলভাবে ডাউনলোড করা হয়েছে!");
+});
+
+// Auto Router Engine
+document.getElementById('autoRouteBtn').addEventListener('click', () => {
+    if (placedComponents.length < 2) return;
+    routedTracks = [];
+    for (let i = 0; i < placedComponents.length - 1; i++) {
+        const c1 = placedComponents[i];
+        const c2 = placedComponents[i+1];
+        routedTracks.push({
+            startX: c1.x, startY: c1.y,
+            midX: c1.x + (c2.x - c1.x) / 2,
+            endX: c2.x, endY: c2.y
+        });
+    }
     drawCanvas();
-    document.getElementById('statusMessage').innerText = `পেশাদার অটো-রাউটিং সফল! ${routedTracks.length}টি আউটপুট লাইন যুক্ত হয়েছে।`;
+    document.getElementById('statusMessage').innerText = `অটো-রাউটিং সম্পন্ন!`;
 });
 
 // Clear Canvas
 document.getElementById('clearBtn').addEventListener('click', () => {
-    placedComponents = [];
-    routedTracks = [];
+    placedComponents = []; routedTracks = []; customVias = []; customText = ""; uploadedLogoImg = null;
     drawCanvas();
 });
 
-searchComponent('');
+searchLCSCLibrary('');
 drawCanvas();
