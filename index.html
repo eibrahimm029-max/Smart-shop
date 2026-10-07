@@ -3,54 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Easy PCB Pro Studio - Auto Router Engine</title>
+    <title>Easy PCB Pro Studio - Ultimate CAD Engine</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="mobile-layout">
-        <!-- Top Navigation -->
+    <div class="app-layout">
+        <!-- Top Toolbar -->
         <header class="top-bar">
             <div class="brand">
                 <i class="fa-solid fa-microchip logo-icon"></i>
-                <span>Easy PCB <strong>PRO</strong></span>
+                <span>EasyPCB <strong>STUDIO PRO</strong></span>
             </div>
             <div class="action-buttons">
-                <button id="autoRouteBtn" class="btn btn-warning"><i class="fa-solid fa-route"></i> Auto-Route</button>
-                <button id="drcCheckBtn" class="btn btn-info"><i class="fa-solid fa-shield-halved"></i> DRC Check</button>
-                <button id="clearBtn" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Clear</button>
+                <button id="addViaBtn" class="btn btn-purple" title="ড্রিল হোল বসান"><i class="fa-solid fa-circle-dot"></i> Via</button>
+                <button id="addHeaderBtn" class="btn btn-blue" title="অটো আউটপুট পিন বসান"><i class="fa-solid fa-plug"></i> Auto Output Pins</button>
+                <button id="autoRouteBtn" class="btn btn-warning" title="অটো রাউটিং"><i class="fa-solid fa-route"></i> Auto-Route</button>
+                <button id="downloadBtn" class="btn btn-success" title="অ্যাসেম্বলি ফাইল ডাউনলোড"><i class="fa-solid fa-download"></i> Gerber/BOM/CPL</button>
+                <button id="clearBtn" class="btn btn-danger"><i class="fa-solid fa-trash"></i></button>
             </div>
         </header>
 
-        <!-- Canvas PCB Area -->
+        <!-- Main PCB Workspace -->
         <section class="canvas-wrapper">
             <div class="canvas-header">
-                <span id="coordDisplay">X: 0.00 | Y: 0.00</span>
-                <span id="statusMessage">Pin-to-Pin Auto Netlist Ready</span>
+                <span id="coordDisplay">X: 0.00 mm | Y: 0.00 mm</span>
+                <span id="statusMessage">প্রফেশনাল পিসিবি ক্যানভাস রেডি</span>
             </div>
             <div class="canvas-container">
                 <canvas id="pcbCanvas"></canvas>
             </div>
         </section>
 
-        <!-- Dynamic Category & Search Library -->
-        <aside class="library-panel">
-            <div class="library-header">
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="হাজার হাজার চিপস, প্রসেসর বা পিন হেডার সার্চ করুন..." oninput="searchComponent(this.value)">
-                </div>
-                <div class="category-tabs">
-                    <button class="tab-btn active" onclick="filterCategory('All')">All</button>
-                    <button class="tab-btn" onclick="filterCategory('MCU/SoC')">MCU/SoC</button>
-                    <button class="tab-btn" onclick="filterCategory('Sensor')">Sensors</button>
-                    <button class="tab-btn" onclick="filterCategory('Connector')">Headers/Output</button>
-                    <button class="tab-btn" onclick="filterCategory('Passive')">Passive</button>
-                </div>
+        <!-- Custom Silkscreen & Logo Section -->
+        <div class="customization-bar">
+            <div class="input-group">
+                <i class="fa-solid fa-font"></i>
+                <input type="text" id="boardText" placeholder="পিসিবির নাম / টেক্সট লিখুন..." oninput="updateSilkscreen()">
             </div>
-            
+            <div class="input-group">
+                <i class="fa-solid fa-image"></i>
+                <input type="file" id="logoUpload" accept="image/*" onchange="handleLogoUpload(event)">
+            </div>
+        </div>
+
+        <!-- Component Search & Online Library -->
+        <aside class="library-panel">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput" placeholder="লাখ লাখ LCSC চিপস, সেন্সর বা হেডার সার্চ করুন..." oninput="searchLCSCLibrary(this.value)">
+            </div>
             <div class="component-list" id="componentList">
-                <!-- Javascript will load parts here -->
+                <!-- Dynamic Parts Loading via API -->
             </div>
         </aside>
     </div>
